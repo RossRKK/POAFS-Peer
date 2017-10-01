@@ -63,7 +63,7 @@ public class Crypto {
 	}
 	
 	/**
-	 * Test that you can pass stuff into the dummy autheticator and get it back.
+	 * Test that you can pass stuff into the dummy authenticator and get it back.
 	 * @throws NoSuchAlgorithmException
 	 */
 	@Test
