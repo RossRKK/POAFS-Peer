@@ -1,5 +1,6 @@
 package poafs.file;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -8,10 +9,17 @@ import java.util.List;
  *
  */
 public class File {
+	
+	private String id;
+	
+	public File(String id) {
+		this.id = id;
+	}
+	
 	/**
 	 * A list of all the blocks in this file.
 	 */
-	private List<FileBlock> blocks;
+	private List<FileBlock> blocks = new ArrayList<FileBlock>();
 	
 	
 	/**
@@ -23,6 +31,10 @@ public class File {
 	}
 	
 	/* Getters and Setters */
+	
+	public String getId() {
+		return id;
+	}
 	
 	public int getNumBlocks() {
 		return blocks.size();

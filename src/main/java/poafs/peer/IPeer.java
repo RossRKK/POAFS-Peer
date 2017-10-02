@@ -9,7 +9,16 @@ public interface IPeer {
 	public void openConnection();
 	
 	/**
-	 * Request a block from a file.
+	 * Request a block from a file, the resulting block should be automatically decrypted.
+	 * @param fileId The id of the file being requested.
+	 * @param index The index of the block being requested.
 	 */
-	public FileBlock requestBlock(String fileId, int index);
+	FileBlock requestBlock(String fileId, int index);
+
+	/**
+	 * Send a block to this peer.
+	 * @param fileId
+	 * @param block
+	 */
+	void sendBlock(String fileId, FileBlock block);
 }

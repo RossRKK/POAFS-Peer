@@ -11,6 +11,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import poafs.Application;
 import poafs.file.EncryptedFileBlock;
 import poafs.file.FileBlock;
 
@@ -62,6 +63,6 @@ public class HybridEncrypter implements IEncrypter {
 		
 		byte[] wrappedKey = rsa.wrap(aesKey);
 		
-		return new EncryptedFileBlock(block.getOriginPeerId(),encryptedContent, block.getIndex(), wrappedKey);
+		return new EncryptedFileBlock(Application.getPeerId(), encryptedContent, block.getIndex(), wrappedKey);
 	}
 }

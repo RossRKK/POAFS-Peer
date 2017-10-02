@@ -18,8 +18,10 @@ import poafs.cryto.HybridDecrypter;
 import poafs.cryto.HybridEncrypter;
 import poafs.file.EncryptedFileBlock;
 import poafs.file.FileBlock;
+import poafs.peer.DummyPeer;
+import poafs.peer.IPeer;
 
-public class Crypto {
+public class Tests {
 	/**
 	 * Generate a key pair.
 	 * @return A key pair.
@@ -73,6 +75,26 @@ public class Crypto {
 		
 		for (int i = 0; i < data.length; i++) {
 			assertEquals(data[i], decrypted.getContent()[i]);
+		}
+	}
+	
+	
+	@Test
+	public void peerTest() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+		KeyPair keys = buildRSAKeyPair();
+		
+		IPeer p = new DummyPeer(keys.getPublic(), keys.getPrivate());
+		
+		byte[] data = randomData(1024);
+		
+		FileBlock input = new FileBlock("test-block", data, 0);
+		
+		p.sendBlock("test-file", input);
+		
+		FileBlock returned = p.requestBlock("test-file", 0);
+		
+		for (int i = 0; i < data.length; i++) {
+			assertEquals(data[i], returned.getContent()[i]);
 		}
 	}
 }
