@@ -1,8 +1,8 @@
 package poafs.auth;
 
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.util.HashMap;
+
+import javax.crypto.SecretKey;
 
 /**
  * A fake class that acts like an authetication server.
@@ -11,25 +11,12 @@ import java.util.HashMap;
  */
 public class DummyAuthenticator implements IAuthenticator {
 	
-	private HashMap<String, PrivateKey> keyRegister = new HashMap<String, PrivateKey>();
+	private HashMap<String, SecretKey> keyRegister = new HashMap<String, SecretKey>();
 
-	/**
-	 * The public key for this client.
-	 */
-	private PublicKey publicKey;
-	
-	public DummyAuthenticator(PublicKey key) {
-		this.publicKey = key;
-	}
 	
 	@Override
-	public PublicKey getPublicKey() {
-		return publicKey;
-	}
-
-	@Override
-	public PrivateKey getPrivateKeyForPeer(String peerId) {
-		return keyRegister.get(peerId);
+	public SecretKey getKeyForFile(String fileId) {
+		return keyRegister.get(fileId);
 	}
 
 	@Override
@@ -38,12 +25,13 @@ public class DummyAuthenticator implements IAuthenticator {
 		return true;
 	}
 	
-	public void registerPeer(String peerId, PrivateKey key) {
-		keyRegister.put(peerId, key);
+	//these methods shouldn't exist on an actual autheticator
+	
+	public void registerFile(String fileId, SecretKey key) {
+		keyRegister.put(fileId, key);
 	}
 	
-	public void unregisterPeer(String peerId) {
-		keyRegister.remove(peerId);
+	public void unregisterFile(String fileId) {
+		keyRegister.remove(fileId);
 	}
-
 }

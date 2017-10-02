@@ -4,11 +4,14 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
-import java.util.UUID;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 import org.junit.Test;
 
-import poafs.auth.DummyAuthenticator;
+import poafs.cryto.AESCipher;
+import poafs.cryto.ICipher;
 import poafs.cryto.IDecrypter;
 import poafs.cryto.IEncrypter;
 import poafs.cryto.RSADecrypter;
@@ -20,11 +23,22 @@ public class Crypto {
 	 * @return A key pair.
 	 * @throws NoSuchAlgorithmException
 	 */
-	public static KeyPair buildKeyPair() throws NoSuchAlgorithmException {
+	public static KeyPair buildRSAKeyPair() throws NoSuchAlgorithmException {
         final int keySize = 2048;
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
         keyPairGenerator.initialize(keySize);      
         return keyPairGenerator.genKeyPair();
+    }
+	
+	/**
+	 * Generate a key pair.
+	 * @return A key pair.
+	 * @throws NoSuchAlgorithmException
+	 */
+	public static SecretKey buildAESKeyPair() throws NoSuchAlgorithmException {
+		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+		keyGen.init(256); // for example
+		return keyGen.generateKey();
     }
 	
 	/**
@@ -46,16 +60,15 @@ public class Crypto {
 	 * @throws NoSuchAlgorithmException
 	 */
 	@Test
-	public void testEncryption() throws NoSuchAlgorithmException {
-		KeyPair keys = buildKeyPair();
+	public void testAESEncryption() throws NoSuchAlgorithmException {
+		SecretKey key = buildAESKeyPair();
 		
-		byte[] data = randomData(10);
+		byte[] data = randomData(264201946);
 		
-		IEncrypter e = new RSAEncrypter(keys.getPublic());
-		IDecrypter d = new RSADecrypter(keys.getPrivate());
+		ICipher c = new AESCipher(key);
 		
-		byte[] encrypted = e.encrypt(data);
-		byte[] decrypted = d.decrypt(encrypted);
+		byte[] encrypted = c.encrypt(data);
+		byte[] decrypted = c.decrypt(encrypted);
 		
 		for (int i = 0; i < data.length; i++) {
 			assertEquals(data[i], decrypted[i]);
@@ -63,22 +76,17 @@ public class Crypto {
 	}
 	
 	/**
-	 * Test that you can pass stuff into the dummy authenticator and get it back.
+	 * Test that if we encrypt something we can decrypt it.
 	 * @throws NoSuchAlgorithmException
 	 */
 	@Test
-	public void testAutheticator() throws NoSuchAlgorithmException {
-		KeyPair keys = buildKeyPair();
+	public void testRSAEncryption() throws NoSuchAlgorithmException {
+		KeyPair keys = buildRSAKeyPair();
 		
-		byte[] data = randomData(10);
+		byte[] data = randomData(245);
 		
-		DummyAuthenticator auth = new DummyAuthenticator(keys.getPublic());
-		
-		String testId = UUID.randomUUID().toString();
-		auth.registerPeer(testId, keys.getPrivate());
-		
-		IEncrypter e = new RSAEncrypter(auth.getPublicKey());
-		IDecrypter d = new RSADecrypter(auth.getPrivateKeyForPeer(testId));
+		IEncrypter e = new RSAEncrypter(keys.getPublic());
+		IDecrypter d = new RSADecrypter(keys.getPrivate());
 		
 		byte[] encrypted = e.encrypt(data);
 		byte[] decrypted = d.decrypt(encrypted);

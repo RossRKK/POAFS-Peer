@@ -5,7 +5,6 @@ import java.security.PrivateKey;
 import javax.crypto.Cipher;
 
 public class RSADecrypter implements IDecrypter {
-
 	/**
 	 * The key used to decrypt incoming data.
 	 */
@@ -21,10 +20,12 @@ public class RSADecrypter implements IDecrypter {
 	@Override
 	public byte[] decrypt(byte[] input) {
 		try {
-			Cipher cipher = Cipher.getInstance("RSA");  
-	        cipher.init(Cipher.DECRYPT_MODE, key);
-	        
-	        return cipher.doFinal(input);
+			Cipher cipher = Cipher.getInstance("RSA");
+			
+			cipher.init(Cipher.DECRYPT_MODE, key);
+			
+			return cipher.doFinal(input);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

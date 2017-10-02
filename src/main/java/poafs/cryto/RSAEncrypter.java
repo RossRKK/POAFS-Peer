@@ -23,10 +23,10 @@ public class RSAEncrypter implements IEncrypter {
 			cipher.init(Cipher.ENCRYPT_MODE, key);
 			
 			return cipher.doFinal(input);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
-
 }
