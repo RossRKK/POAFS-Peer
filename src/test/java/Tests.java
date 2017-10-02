@@ -1,5 +1,6 @@
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -14,10 +15,12 @@ import javax.crypto.SecretKey;
 
 import org.junit.Test;
 
+import poafs.Application;
 import poafs.cryto.HybridDecrypter;
 import poafs.cryto.HybridEncrypter;
 import poafs.file.EncryptedFileBlock;
 import poafs.file.FileBlock;
+import poafs.file.PoafsFile;
 import poafs.peer.DummyPeer;
 import poafs.peer.IPeer;
 
@@ -83,7 +86,7 @@ public class Tests {
 	public void peerTest() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 		KeyPair keys = buildRSAKeyPair();
 		
-		IPeer p = new DummyPeer(keys.getPublic(), keys.getPrivate());
+		IPeer p = new DummyPeer("test-peer", keys.getPublic(), keys.getPrivate());
 		
 		byte[] data = randomData(1024);
 		
@@ -96,5 +99,37 @@ public class Tests {
 		for (int i = 0; i < data.length; i++) {
 			assertEquals(data[i], returned.getContent()[i]);
 		}
+	}
+	
+	@Test
+	public void saveTest() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
+		byte[] data = "Hello, World!".getBytes();
+		
+		FileBlock input = new FileBlock("test", data, 0);
+		
+		PoafsFile file = new PoafsFile("normal");
+		
+		file.addBlock(input);
+		
+		file.saveFile();
+	}
+	
+	@Test
+	public void saveEncryptedTest() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
+		KeyPair keys = buildRSAKeyPair();
+		
+		byte[] data = "Hello, World!".getBytes();
+		
+		HybridEncrypter e = new HybridEncrypter(keys.getPublic());
+		
+		FileBlock input = new FileBlock("test", data, 0);
+		
+		EncryptedFileBlock encrypted = e.encrypt(input);
+		
+		PoafsFile file = new PoafsFile("encrypted");
+		
+		file.addBlock(encrypted);
+		
+		file.saveFile();
 	}
 }

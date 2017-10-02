@@ -14,6 +14,7 @@ import javax.crypto.SecretKey;
 import poafs.Application;
 import poafs.file.EncryptedFileBlock;
 import poafs.file.FileBlock;
+import poafs.local.PropertiesManager;
 
 public class HybridEncrypter implements IEncrypter {
 	/**
@@ -63,6 +64,6 @@ public class HybridEncrypter implements IEncrypter {
 		
 		byte[] wrappedKey = rsa.wrap(aesKey);
 		
-		return new EncryptedFileBlock(Application.getPeerId(), encryptedContent, block.getIndex(), wrappedKey);
+		return new EncryptedFileBlock(Application.getPropertiesManager().getPeerId(), encryptedContent, block.getIndex(), wrappedKey);
 	}
 }

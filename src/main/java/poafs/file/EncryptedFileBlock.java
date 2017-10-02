@@ -15,4 +15,9 @@ public class EncryptedFileBlock extends FileBlock {
 	public byte[] getWrappedKey() {
 		return wrappedKey;
 	}
+	
+	@Override
+	protected String getHeaders() {
+		return super.getHeaders() + "\n" + new String(wrappedKey);
+	}
 }

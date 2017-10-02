@@ -10,4 +10,6 @@ public class Reference {
 	 * The size that each block should be.
 	 */
 	public static final int BLOCK_SIZE = 1024;
+
+	public static final String CONFIG_PATH = "config.properties";
 }

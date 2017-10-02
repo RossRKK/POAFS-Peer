@@ -1,5 +1,8 @@
 package poafs.file;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,11 +11,11 @@ import java.util.List;
  * @author rossrkk
  *
  */
-public class File {
+public class PoafsFile {
 	
 	private String id;
 	
-	public File(String id) {
+	public PoafsFile(String id) {
 		this.id = id;
 	}
 	
@@ -28,6 +31,19 @@ public class File {
 	 */
 	public void addBlock(FileBlock block) {
 		blocks.add(block.getIndex(), block);
+	}
+	
+	/**
+	 * Save the file to disk.
+	 * @throws IOException 
+	 */
+	public void saveFile() throws IOException {
+		File folder = new File(id);
+		folder.mkdir();
+		
+		for (int i = 0; i < blocks.size(); i++) {
+			blocks.get(i).save(id);
+		}
 	}
 	
 	/* Getters and Setters */

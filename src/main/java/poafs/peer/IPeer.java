@@ -21,4 +21,10 @@ public interface IPeer {
 	 * @param block
 	 */
 	void sendBlock(String fileId, FileBlock block);
+	
+	/**
+	 * Get this peers Id.
+	 * @return The peer's id.
+	 */
+	String getId();
 }

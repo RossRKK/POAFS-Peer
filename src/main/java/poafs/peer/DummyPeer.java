@@ -13,16 +13,18 @@ import poafs.cryto.HybridEncrypter;
 import poafs.cryto.IDecrypter;
 import poafs.cryto.IEncrypter;
 import poafs.file.EncryptedFileBlock;
-import poafs.file.File;
+import poafs.file.PoafsFile;
 import poafs.file.FileBlock;
 
 public class DummyPeer implements IPeer {
+	
+	private String id;
 	
 	private IDecrypter d;
 	
 	private IEncrypter e;
 	
-	private HashMap<String, File> files = new HashMap<String, File>();
+	private HashMap<String, PoafsFile> files = new HashMap<String, PoafsFile>();
 
 	/**
 	 * Create a new dummy peer.
@@ -32,7 +34,8 @@ public class DummyPeer implements IPeer {
 	 * @throws NoSuchAlgorithmException
 	 * @throws NoSuchPaddingException
 	 */
-	public DummyPeer(PublicKey publicKey, PrivateKey privateKey) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException {
+	public DummyPeer(String id, PublicKey publicKey, PrivateKey privateKey) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException {
+		this.id = id;
 		d = new HybridDecrypter(privateKey);
 		e = new HybridEncrypter(publicKey);
 	}
@@ -64,7 +67,7 @@ public class DummyPeer implements IPeer {
 			if (files.containsKey(fileId)) {
 				files.get(fileId).addBlock(block);
 			} else {
-				File file = new File(fileId);
+				PoafsFile file = new PoafsFile(fileId);
 				
 				file.addBlock(eBlock);
 				
@@ -73,5 +76,10 @@ public class DummyPeer implements IPeer {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public String getId() {
+		return id;
 	}
 }

@@ -3,6 +3,9 @@ package poafs.auth;
 import java.security.PrivateKey;
 import java.util.HashMap;
 
+import poafs.cryto.HybridDecrypter;
+import poafs.cryto.IDecrypter;
+
 /**
  * A fake class that acts like an authetication server.
  * @author rossrkk
@@ -13,8 +16,13 @@ public class DummyAuthenticator implements IAuthenticator {
 	private HashMap<String, PrivateKey> keyRegister = new HashMap<String, PrivateKey>();
 
 	@Override
-	public PrivateKey getKeyForPeer(String peerId) {
-		return keyRegister.get(peerId);
+	public IDecrypter getKeyForPeer(String peerId) {
+		try {
+			return new HybridDecrypter(keyRegister.get(peerId));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override

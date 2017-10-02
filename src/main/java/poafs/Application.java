@@ -1,21 +1,44 @@
 package poafs;
 
-import java.util.UUID;
+import poafs.auth.DummyAuthenticator;
+import poafs.auth.IAuthenticator;
+import poafs.cryto.IEncrypter;
+import poafs.local.PropertiesManager;
 
 public class Application {
+	/**
+	 * The authenticator being used by this peer.
+	 */
+	private static IAuthenticator auth;
 	
 	/**
-	 * The id of this peer.
+	 * The encrypter to be used for all local files.
 	 */
-	private static String peerId;
+	private static IEncrypter localEncrypter;
+	
+
+	/**
+	 * The application properties manager.
+	 */
+	private static PropertiesManager pm = new PropertiesManager();
 	
 	public static void main(String[] args) {
-		//get a new peerId
-		peerId = UUID.randomUUID().toString();
-		//TODO reload the old one if there is one
+		pm.loadProperties();
+		
+		auth = new DummyAuthenticator();
+		
+		auth.authoriseUser();
 	}
 	
-	public static String getPeerId() {
-		return peerId;
+	public static IAuthenticator getAuth() {
+		return auth;
+	}
+	
+	public static IEncrypter getLocalEncrypter() {
+		return localEncrypter;
+	}
+	
+	public static PropertiesManager getPropertiesManager() {
+		return pm;
 	}
 }
