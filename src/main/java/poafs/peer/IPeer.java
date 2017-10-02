@@ -1,5 +1,7 @@
 package poafs.peer;
 
+import poafs.file.FileBlock;
+
 public interface IPeer {
 	/**
 	 * Handshake with another peer.
@@ -7,7 +9,7 @@ public interface IPeer {
 	public void openConnection();
 	
 	/**
-	 * Request a segment from a file.
+	 * Request a block from a file.
 	 */
-	public byte[] requestSegment(String fileId, int segment);
+	public FileBlock requestBlock(String fileId, int index);
 }

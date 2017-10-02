@@ -1,21 +1,23 @@
 import static org.junit.Assert.assertEquals;
 
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 import org.junit.Test;
 
-import poafs.cryto.AESCipher;
-import poafs.cryto.ICipher;
-import poafs.cryto.IDecrypter;
-import poafs.cryto.IEncrypter;
-import poafs.cryto.RSADecrypter;
-import poafs.cryto.RSAEncrypter;
+import poafs.cryto.HybridDecrypter;
+import poafs.cryto.HybridEncrypter;
+import poafs.file.EncryptedFileBlock;
+import poafs.file.FileBlock;
 
 public class Crypto {
 	/**
@@ -55,44 +57,22 @@ public class Crypto {
 		return data;
 	}
 	
-	/**
-	 * Test that if we encrypt something we can decrypt it.
-	 * @throws NoSuchAlgorithmException
-	 */
 	@Test
-	public void testAESEncryption() throws NoSuchAlgorithmException {
-		SecretKey key = buildAESKeyPair();
-		
-		byte[] data = randomData(264201946);
-		
-		ICipher c = new AESCipher(key);
-		
-		byte[] encrypted = c.encrypt(data);
-		byte[] decrypted = c.decrypt(encrypted);
-		
-		for (int i = 0; i < data.length; i++) {
-			assertEquals(data[i], decrypted[i]);
-		}
-	}
-	
-	/**
-	 * Test that if we encrypt something we can decrypt it.
-	 * @throws NoSuchAlgorithmException
-	 */
-	@Test
-	public void testRSAEncryption() throws NoSuchAlgorithmException {
+	public void hybridTest() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 		KeyPair keys = buildRSAKeyPair();
 		
-		byte[] data = randomData(245);
+		byte[] data = randomData(1024);
 		
-		IEncrypter e = new RSAEncrypter(keys.getPublic());
-		IDecrypter d = new RSADecrypter(keys.getPrivate());
+		HybridEncrypter e = new HybridEncrypter(keys.getPublic());
+		HybridDecrypter d = new HybridDecrypter(keys.getPrivate());
 		
-		byte[] encrypted = e.encrypt(data);
-		byte[] decrypted = d.decrypt(encrypted);
+		FileBlock input = new FileBlock("test", data, 0);
+		
+		EncryptedFileBlock encrypted = e.encrypt(input);
+		FileBlock decrypted = d.decrypt(encrypted);
 		
 		for (int i = 0; i < data.length; i++) {
-			assertEquals(data[i], decrypted[i]);
+			assertEquals(data[i], decrypted.getContent()[i]);
 		}
 	}
 }

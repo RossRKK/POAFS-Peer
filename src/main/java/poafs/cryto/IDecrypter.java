@@ -1,11 +1,21 @@
 package poafs.cryto;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
+import poafs.file.EncryptedFileBlock;
+import poafs.file.FileBlock;
+
 public interface IDecrypter {
 	/**
-	 * Encrypt the content with this peers public key.
+	 * Decrypt a file block.
 	 * @param input The encrypted input data.
 	 * 
 	 * @return The decrypted output data.
 	 */
-	public byte[] decrypt(byte[] input);
+	FileBlock decrypt(EncryptedFileBlock block) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException;
 }

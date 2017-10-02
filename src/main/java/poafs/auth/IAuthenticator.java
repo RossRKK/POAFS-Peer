@@ -1,6 +1,6 @@
 package poafs.auth;
 
-import javax.crypto.SecretKey;
+import java.security.PrivateKey;
 
 /**
  * An interface that represents the auth service for the network.
@@ -9,11 +9,11 @@ import javax.crypto.SecretKey;
  */
 public interface IAuthenticator {
 	/**
-	 * Get the private key for a given file.
-	 * @param fileId The id of the file we want to decrypt.
-	 * @return The private key for the given file.
+	 * Get the private key for a given peer.
+	 * @param peerId The id of the peer who provided the block we want to decrypt.
+	 * @return The private key for the given peer.
 	 */
-	public SecretKey getKeyForFile(String fileId);
+	public PrivateKey getKeyForPeer(String peerId);
 	
 	/**
 	 * Authorise the user TODO
