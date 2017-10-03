@@ -3,7 +3,10 @@ package poafs;
 import poafs.auth.DummyAuthenticator;
 import poafs.auth.IAuthenticator;
 import poafs.cryto.IEncrypter;
+import poafs.file.FileManager;
+import poafs.lib.Reference;
 import poafs.local.PropertiesManager;
+import poafs.net.Server;
 
 public class Application {
 	/**
@@ -15,6 +18,11 @@ public class Application {
 	 * The encrypter to be used for all local files.
 	 */
 	private static IEncrypter localEncrypter;
+	
+	/**
+	 * The file system manager.
+	 */
+	private static FileManager fileManager = new FileManager();
 	
 
 	/**
@@ -28,6 +36,9 @@ public class Application {
 		auth = new DummyAuthenticator();
 		
 		auth.authoriseUser();
+		
+		//start the local server
+		new Thread(new Server(Reference.DEFAULT_PORT)).start();
 	}
 	
 	public static IAuthenticator getAuth() {
@@ -40,5 +51,9 @@ public class Application {
 	
 	public static PropertiesManager getPropertiesManager() {
 		return pm;
+	}
+	
+	public static FileManager getFileManager() {
+		return fileManager;
 	}
 }

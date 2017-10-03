@@ -15,7 +15,6 @@ import javax.crypto.SecretKey;
 
 import org.junit.Test;
 
-import poafs.Application;
 import poafs.cryto.HybridDecrypter;
 import poafs.cryto.HybridEncrypter;
 import poafs.file.EncryptedFileBlock;
