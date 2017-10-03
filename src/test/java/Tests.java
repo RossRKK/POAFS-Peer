@@ -1,4 +1,4 @@
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -19,9 +19,13 @@ import poafs.cryto.HybridDecrypter;
 import poafs.cryto.HybridEncrypter;
 import poafs.file.EncryptedFileBlock;
 import poafs.file.FileBlock;
+import poafs.file.FileManager;
 import poafs.file.PoafsFile;
+import poafs.lib.Reference;
+import poafs.net.Server;
 import poafs.peer.DummyPeer;
 import poafs.peer.IPeer;
+import poafs.peer.NetworkPeer;
 
 public class Tests {
 	/**
@@ -130,5 +134,40 @@ public class Tests {
 		file.addBlock(encrypted);
 		
 		file.saveFile();
+	}
+	
+	@Test
+	public void networkTest() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+		FileManager fm = new FileManager();
+		
+		Server s = new Server(Reference.DEFAULT_PORT, fm);
+		
+		IPeer p = new NetworkPeer("localhost", Reference.DEFAULT_PORT);
+		
+		KeyPair keys = buildRSAKeyPair();
+		
+		byte[] data = "Hello, World!".getBytes();
+		
+		HybridEncrypter e = new HybridEncrypter(keys.getPublic());
+		
+		FileBlock input = new FileBlock("test", data, 0);
+		
+		EncryptedFileBlock encrypted = e.encrypt(input);
+		
+		PoafsFile file = new PoafsFile("encrypted");
+		
+		file.addBlock(encrypted);
+		
+		fm.registerFile(file);
+		
+		new Thread(s).start();
+		
+		p.openConnection();
+		
+		FileBlock returned = p.requestBlock("encrypted", 0);
+		
+		for (int i = 0; i < returned.getContent().length; i++) {
+			assertTrue(returned.getContent()[i] == encrypted.getContent()[i]);
+		}
 	}
 }

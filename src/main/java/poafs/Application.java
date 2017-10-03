@@ -38,7 +38,7 @@ public class Application {
 		auth.authoriseUser();
 		
 		//start the local server
-		new Thread(new Server(Reference.DEFAULT_PORT)).start();
+		new Thread(new Server(Reference.DEFAULT_PORT, fileManager)).start();
 	}
 	
 	public static IAuthenticator getAuth() {
