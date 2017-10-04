@@ -2,7 +2,6 @@ package poafs.net;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Scanner;
@@ -19,18 +18,26 @@ public class RequestHandler implements Runnable {
 	 */
 	private Socket sock;
 	
+	BufferedOutputStream out;
+	
+	Scanner in;
+	
 	public RequestHandler(Socket socket, FileManager fm) throws SocketException {
 		sock = socket;
 		this.fm = fm;
 		sock.setKeepAlive(true);
+		
+		try {
+			out = new BufferedOutputStream(sock.getOutputStream());
+			in = new Scanner(sock.getInputStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
 	public void run() {
 		try {
-			BufferedOutputStream out = new BufferedOutputStream(sock.getOutputStream());
-			PrintWriter fancyOut = new PrintWriter(sock.getOutputStream());
-			Scanner in = new Scanner(sock.getInputStream());
 			
 			//print some headers
 			out.write("POAFS Version 0.1\n".getBytes());
@@ -55,13 +62,13 @@ public class RequestHandler implements Runnable {
 				
 				EncryptedFileBlock block = (EncryptedFileBlock) fm.getFileBlock(fileId, blockIndex);
 				
-				fancyOut.println("key length:" + block.getWrappedKey().length);
+				println("key length:" + block.getWrappedKey().length);
 				System.out.println("Server: " + "key length:" + block.getWrappedKey().length);
 				
 				out.write(block.getWrappedKey());
 				System.out.println("Server: " + new String(block.getWrappedKey()));
 				
-				fancyOut.println("block length:" + block.getContent().length);
+				println("block length:" + block.getContent().length);
 				System.out.println("Server: " + "block length:" + block.getContent().length);
 				
 				out.write(block.getContent());
@@ -69,6 +76,8 @@ public class RequestHandler implements Runnable {
 				
 				out.flush();
 			}
+			
+			in.close();
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -79,6 +88,12 @@ public class RequestHandler implements Runnable {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	private void println(String str) throws IOException {
+		out.write((str + "\n").getBytes());
+		
+		out.flush();
 	}
 
 }
