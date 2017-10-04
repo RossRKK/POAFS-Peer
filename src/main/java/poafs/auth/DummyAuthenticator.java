@@ -1,6 +1,5 @@
 package poafs.auth;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.PrivateKey;
 import java.util.HashMap;

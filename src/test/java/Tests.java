@@ -2,7 +2,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -165,7 +164,8 @@ public class Tests {
 		//start the server
 		FileManager fm = new FileManager();
 		Server s = new Server(Reference.DEFAULT_PORT, fm);
-		new Thread(s).start();
+		Thread server = new Thread(s);
+		server.start();
 
 		//register the peer with the dummy autheticator
 		DummyAuthenticator auth = new DummyAuthenticator();
@@ -192,5 +192,7 @@ public class Tests {
 		for (int i = 0; i < decrypted.getContent().length; i++) {
 			assertTrue(decrypted.getContent()[i] == input.getContent()[i]);
 		}
+		
+		server.interrupt();
 	}
 }

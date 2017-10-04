@@ -1,12 +1,10 @@
 package poafs.peer;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.Scanner;
 
 import poafs.Application;
 import poafs.file.EncryptedFileBlock;
