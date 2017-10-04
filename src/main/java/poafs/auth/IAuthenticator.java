@@ -1,5 +1,7 @@
 package poafs.auth;
 
+import java.net.InetSocketAddress;
+
 import poafs.cryto.IDecrypter;
 
 /**
@@ -14,6 +16,14 @@ public interface IAuthenticator {
 	 * @return The decrypter that can decrypt files from the given peer.
 	 */
 	public IDecrypter getKeyForPeer(String peerId);
+	
+	/**
+	 * Get the hostname this peer can be accessed on.
+	 * @param peerId The id of the peer.
+	 * @return The hostname of the peer.
+	 */
+	public InetSocketAddress getHostForPeer(String peerId);
+	
 	
 	/**
 	 * Authorise the user TODO

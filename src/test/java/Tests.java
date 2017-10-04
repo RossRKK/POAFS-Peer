@@ -1,6 +1,9 @@
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -15,6 +18,7 @@ import javax.crypto.SecretKey;
 
 import org.junit.Test;
 
+import poafs.auth.DummyAuthenticator;
 import poafs.cryto.HybridDecrypter;
 import poafs.cryto.HybridEncrypter;
 import poafs.file.EncryptedFileBlock;
@@ -136,38 +140,57 @@ public class Tests {
 		file.saveFile();
 	}
 	
+	
+	/**
+	 * This test basically just tests everything, it is completely ridiculous.
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
+	 * @throws NoSuchPaddingException
+	 * @throws IllegalBlockSizeException
+	 * @throws BadPaddingException
+	 */
 	@Test
-	public void networkTest() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
-		FileManager fm = new FileManager();
-		
-		Server s = new Server(Reference.DEFAULT_PORT, fm);
-		
-		IPeer p = new NetworkPeer("localhost", Reference.DEFAULT_PORT);
-		
-		KeyPair keys = buildRSAKeyPair();
+	public void networkDecryptTest() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+		//declare some stuff
+		String peerId = "test-peer";
+		String localPeerId = "local-peer";
+		String fileId = "test-file";
 		
 		byte[] data = "Hello, World!".getBytes();
 		
+		//generate the keys
+		KeyPair keys = buildRSAKeyPair();
 		HybridEncrypter e = new HybridEncrypter(keys.getPublic());
 		
-		FileBlock input = new FileBlock("test", data, 0);
+		//start the server
+		FileManager fm = new FileManager();
+		Server s = new Server(Reference.DEFAULT_PORT, fm);
+		new Thread(s).start();
+
+		//register the peer with the dummy autheticator
+		DummyAuthenticator auth = new DummyAuthenticator();
+		auth.registerPeer(peerId, keys.getPrivate(), new InetSocketAddress("localhost", Reference.DEFAULT_PORT));
+		IPeer p = new NetworkPeer(auth.getHostForPeer(peerId));
 		
+		//generate a dummy file
+		FileBlock input = new FileBlock(localPeerId, data, 0);
 		EncryptedFileBlock encrypted = e.encrypt(input);
-		
-		PoafsFile file = new PoafsFile("encrypted");
-		
+		PoafsFile file = new PoafsFile(fileId);
 		file.addBlock(encrypted);
 		
+		//register the file with a file manager
 		fm.registerFile(file);
 		
-		new Thread(s).start();
-		
+		//request the file
 		p.openConnection();
+		FileBlock returned = p.requestBlock(fileId, 0);
 		
-		FileBlock returned = p.requestBlock("encrypted", 0);
+		//decrypt the file
+		FileBlock decrypted = auth.getKeyForPeer(peerId).decrypt((EncryptedFileBlock) returned);
 		
-		for (int i = 0; i < returned.getContent().length; i++) {
-			assertTrue(returned.getContent()[i] == encrypted.getContent()[i]);
+		//test that the decrypted returned file is correct
+		for (int i = 0; i < decrypted.getContent().length; i++) {
+			assertTrue(decrypted.getContent()[i] == input.getContent()[i]);
 		}
 	}
 }

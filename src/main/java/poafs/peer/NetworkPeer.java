@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -33,6 +34,11 @@ public class NetworkPeer implements IPeer {
 		this.port = port;
 	}
 	
+	public NetworkPeer(InetSocketAddress addr) {
+		this.host = addr.getHostName();
+		this.port = addr.getPort();
+	}
+	
 	/**
 	 * Utility method to read a line from the input.
 	 * @return The line from the input
@@ -53,7 +59,7 @@ public class NetworkPeer implements IPeer {
 		
 		//tolerate carriage returns
 		if (line.endsWith("\r")) {
-			line = line.substring(0, line.length() - 2);
+			line = line.substring(0, line.length() - 1);
 		}
 		
 		//return the line
@@ -86,6 +92,13 @@ public class NetworkPeer implements IPeer {
 		}
 	}
 
+	/**
+	 * Request a block from the connected peer.
+	 * @param fileId The id of the file you want.
+	 * @param index The index of the block you want.
+	 * 
+	 * @return The relevant block.
+	 */
 	@Override
 	public FileBlock requestBlock(String fileId, int index) {
 		String request = fileId + ":" + index;
