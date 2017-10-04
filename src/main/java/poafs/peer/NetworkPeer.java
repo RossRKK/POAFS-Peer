@@ -51,6 +51,11 @@ public class NetworkPeer implements IPeer {
 			line += character;
 		}
 		
+		//tolerate carriage returns
+		if (line.endsWith("\r")) {
+			line = line.substring(0, line.length() - 2);
+		}
+		
 		//return the line
 		return line;
 	}

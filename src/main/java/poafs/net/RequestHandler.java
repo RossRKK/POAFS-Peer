@@ -91,7 +91,7 @@ public class RequestHandler implements Runnable {
 	}
 	
 	private void println(String str) throws IOException {
-		out.write((str + "\n").getBytes());
+		out.write((str + "\r\n").getBytes());
 		
 		out.flush();
 	}
