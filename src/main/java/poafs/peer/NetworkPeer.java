@@ -27,14 +27,12 @@ public class NetworkPeer implements IPeer {
 	
 	private BufferedInputStream in;
 	
-	public NetworkPeer(String host, int port) {
-		this.host = host;
-		this.port = port;
-	}
-	
-	public NetworkPeer(InetSocketAddress addr) {
+	private String id;
+
+	public NetworkPeer(String id, InetSocketAddress addr) {
 		this.host = addr.getHostName();
 		this.port = addr.getPort();
+		this.id = id;
 	}
 	
 	/**
@@ -150,14 +148,14 @@ public class NetworkPeer implements IPeer {
 			in.read(content);
 			
 			//return the encrypted block
-			return new EncryptedFileBlock("origin-peer", content, index, wrappedKey);
+			return new EncryptedFileBlock(id, content, index, wrappedKey);
 		} else {
 			//read in the content of the block
 			byte[] content = new byte[length];
 			in.read(content);
 			
 			//return the relevant block
-			return new FileBlock("origin-peer", content, index);
+			return new FileBlock(id, content, index);
 		}
 	}
 

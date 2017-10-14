@@ -1,8 +1,12 @@
 package poafs.auth;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 
 import poafs.cryto.IDecrypter;
+import poafs.cryto.IEncrypter;
+import poafs.file.FileMeta;
+import poafs.file.PoafsFile;
 
 /**
  * An interface that represents the auth service for the network.
@@ -29,5 +33,19 @@ public interface IAuthenticator {
 	 * Authorise the user TODO
 	 * @return Whether the user is authorised.
 	 */
-	public boolean authoriseUser();
+	public boolean authoriseUser(String userName, String password);
+	
+	/**
+	 * List all available files on this auth server.
+	 * @return A list of files.
+	 */
+	public List<FileMeta> listFiles();
+	
+	public FileMeta getInfoForFile(String fileId);
+	
+	public List<String> findBlock(String fileId, int blockIndex);
+
+	public void registerFile(PoafsFile file, String fileName);
+
+	public IEncrypter registerPeer();
 }
