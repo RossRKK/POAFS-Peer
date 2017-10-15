@@ -224,8 +224,7 @@ public class NetAuthenticator implements IAuthenticator {
 
 	@Override
 	public IEncrypter registerPeer() {
-		String host = s.getLocalAddress().toString().split("/")[1];
-		out.println("register-peer " + host + ":" + Reference.DEFAULT_PORT);
+		out.println("register-peer " + Reference.DEFAULT_PORT);
 		out.flush();
 		
 		String lengthStr = readLine();

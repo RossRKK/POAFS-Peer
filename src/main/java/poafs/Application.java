@@ -164,6 +164,7 @@ public class Application {
 		System.out.println("Encrypted");
 		
 		fileManager.registerFile(file);
+		file.saveFile();
 		
 		auth.registerFile(file, fileName);
 		System.out.println("Registered");
