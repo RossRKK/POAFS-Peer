@@ -166,7 +166,7 @@ public class NetAuthenticator implements IAuthenticator {
 		
 		List<FileMeta> files = new ArrayList<FileMeta>();
 		for (int i = 0; i < length; i++) {
-			String[] info = readLine().split(" ");
+			String[] info = readLine().split(":");
 			int fileLength;
 			try {
 				fileLength = Integer.parseInt(info[2]);
@@ -215,6 +215,7 @@ public class NetAuthenticator implements IAuthenticator {
 		out.println(fileName);
 		
 		out.flush();
+		String success = readLine();
 	}
 
 	@Override
