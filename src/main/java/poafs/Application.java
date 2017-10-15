@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -228,16 +229,33 @@ public class Application {
 	private static FileBlock getBlock(String fileId, int block) {
 		Random r = new Random();
 		List<String> peerIds = auth.findBlock(fileId, block);
+		String peerId = null;
 		
-		//choose a random peer
-		String peerId = peerIds.get(r.nextInt(peerIds.size()));
-		
-		InetSocketAddress addr = auth.getHostForPeer(peerId);
-		
-		//get the block off of the peer
-		IPeer peer = new NetworkPeer(peerId, addr);
-		peer.openConnection();
-		return peer.requestBlock(fileId, block);
+		boolean connected = false;
+		while (!connected) {
+			try {
+				//choose a random peer
+				peerId = peerIds.get(r.nextInt(peerIds.size()));
+				
+				InetSocketAddress addr = auth.getHostForPeer(peerId);
+				
+				//get the block off of the peer
+				IPeer peer = new NetworkPeer(peerId, addr);
+			
+				peer.openConnection();
+				
+				connected = true;
+				
+				return peer.requestBlock(fileId, block);
+			} catch (IOException e) {
+				peerIds.remove(peerId);
+				
+				if (peerIds.size() == 0) {
+					break;
+				}
+			}
+		}
+		return null;
 	}
 
 	private static void listFiles() {

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 import poafs.Application;
 import poafs.file.EncryptedFileBlock;
@@ -63,29 +64,26 @@ public class NetworkPeer implements IPeer {
 	}
 
 	@Override
-	public void openConnection() {
-		try {
-			s = new Socket(host, port);
-			
-			out = new PrintWriter(s.getOutputStream());		
-			
-			in = new BufferedInputStream(s.getInputStream());
-			
-			//print some headers
-			out.println("POAFS Version 0.1");
-			System.out.println("Peer: " + "POAFS Version 0.1");
-			out.println(Application.getPropertiesManager().getPeerId());
-			System.out.println("Peer: " + Application.getPropertiesManager().getPeerId());
-			
-			String versionDec = readLine();
-			System.out.println("Peer Recieve Version: " + versionDec);
+	public void openConnection() throws UnknownHostException, IOException {
+		System.out.println(host + ":" + port);
+		s = new Socket(host, port);
+		
+		out = new PrintWriter(s.getOutputStream());		
+		
+		in = new BufferedInputStream(s.getInputStream());
+		
+		//print some headers
+		out.println("POAFS Version 0.1");
+		System.out.println("Peer: " + "POAFS Version 0.1");
+		out.println(Application.getPropertiesManager().getPeerId());
+		System.out.println("Peer: " + Application.getPropertiesManager().getPeerId());
+		
+		String versionDec = readLine();
+		System.out.println("Peer Recieve Version: " + versionDec);
 
-			String peerId = readLine();
-			System.out.println("Peer Recieved ID: " + peerId);
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		String peerId = readLine();
+		System.out.println("Peer Recieved ID: " + peerId);
+
 	}
 
 	/**

@@ -1,12 +1,17 @@
 package poafs.peer;
 
+import java.io.IOException;
+import java.net.UnknownHostException;
+
 import poafs.file.FileBlock;
 
 public interface IPeer {
 	/**
 	 * Handshake with another peer.
+	 * @throws IOException 
+	 * @throws UnknownHostException 
 	 */
-	public void openConnection();
+	public void openConnection() throws UnknownHostException, IOException;
 	
 	/**
 	 * Request a block from a file, the resulting block should be automatically decrypted.
