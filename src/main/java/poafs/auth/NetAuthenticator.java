@@ -138,6 +138,7 @@ public class NetAuthenticator implements IAuthenticator {
 		String[] tuple = readLine().split(":");
 		
 		String host = tuple[0];
+		host = host.split("/")[1];
 		int port = Integer.parseInt(tuple[1]);
 		
 		return new InetSocketAddress(host, port);
@@ -182,6 +183,8 @@ public class NetAuthenticator implements IAuthenticator {
 	@Override
 	public FileMeta getInfoForFile(String fileId) {
 		out.println("file-info " + fileId);
+		out.flush();
+		System.out.println("Sent info request");
 		
 		String id = readLine().split(":")[1];
 		
@@ -195,6 +198,7 @@ public class NetAuthenticator implements IAuthenticator {
 	@Override
 	public List<String> findBlock(String fileId, int blockIndex) {
 		out.println("find-block " + fileId + ":" + blockIndex);
+		out.flush();
 		
 		String lengthStr = readLine();
 		int length = Integer.parseInt(lengthStr.split(":")[1]);

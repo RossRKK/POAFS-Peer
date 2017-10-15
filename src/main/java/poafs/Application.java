@@ -65,7 +65,7 @@ public class Application {
 	public static void main(String[] args) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException {
 		pm.loadProperties();
 		
-		auth = new NetAuthenticator("localhost", 8000, false);
+		auth = new NetAuthenticator(args[0], Integer.parseInt(args[1]), false);
 		
 		//start the local server
 		new Thread(new Server(Reference.DEFAULT_PORT, fileManager)).start();
