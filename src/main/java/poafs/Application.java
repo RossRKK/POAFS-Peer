@@ -155,7 +155,7 @@ public class Application {
 			int remainingBytes = bytes.length - (i * blockLength);
 			int thisBlockLength = Math.min(blockLength, remainingBytes);
 			
-			byte[] contents = Arrays.copyOfRange(bytes, i * blockLength, thisBlockLength);
+			byte[] contents = Arrays.copyOfRange(bytes, i * blockLength, i * blockLength + thisBlockLength);
 			
 			FileBlock block = new FileBlock(id, contents, i);
 			EncryptedFileBlock encrypted = localEncrypter.encrypt(block);
@@ -178,14 +178,14 @@ public class Application {
 		String fileId = sc.nextLine();
 		
 		FileMeta info = auth.getInfoForFile(fileId);
-		System.out.println("Info recieved");
+		System.out.println("Length: " + info.getLength());
 		
 		PoafsFile f = new PoafsFile(info.getId());
 		
 		for (int i = 0; i < info.getLength(); i++) {
 			f.addBlock(getBlock(fileId, i));
 		}
-		System.out.println("Blocks recieved");
+		System.out.println(f.getNumBlocks() + " blocks recieved");
 		
 		List<FileBlock> decrypted = new ArrayList<FileBlock>();
 		for (FileBlock block:f.getBlocks()) {
@@ -204,20 +204,10 @@ public class Application {
 		}
 		System.out.println("Decrypted");
 		
-		File output = new File(info.getId());
-		try {
-			output.createNewFile();
-			FileOutputStream out = new FileOutputStream(output);
-			
-			for (FileBlock block:decrypted) {
-				out.write(block.getContent());
-			}
-			
-			out.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+		for (FileBlock block:decrypted) {
+			System.out.print(new String(block.getContent()));
 		}
-		System.out.println("File Saved");
+		System.out.println("End");
 	}
 
 	/**
@@ -248,6 +238,7 @@ public class Application {
 				
 				return peer.requestBlock(fileId, block);
 			} catch (IOException e) {
+				System.out.println(peerId + " was unreachable");
 				peerIds.remove(peerId);
 				
 				if (peerIds.size() == 0) {

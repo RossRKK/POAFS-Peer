@@ -138,7 +138,7 @@ public class NetAuthenticator implements IAuthenticator {
 		String[] tuple = readLine().split(":");
 		
 		String host = tuple[0];
-		host = host.split("/")[1];
+		System.out.println(host + ":" + tuple[1]);
 		int port = Integer.parseInt(tuple[1]);
 		
 		return new InetSocketAddress(host, port);
