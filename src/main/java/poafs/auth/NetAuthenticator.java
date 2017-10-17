@@ -244,4 +244,9 @@ public class NetAuthenticator implements IAuthenticator {
 			return null;
 		}
 	}
+
+	@Override
+	public void registerTransfer(String fileId, int index) {
+		out.println("register-transfer " + fileId + ":" + index);
+	}
 }

@@ -48,4 +48,11 @@ public interface IAuthenticator {
 	public void registerFile(PoafsFile file, String fileName);
 
 	public IEncrypter registerPeer();
+	
+	/**
+	 * Register that this peer has received a file block.
+	 * @param fileId The id of the file.
+	 * @param index The index of the block.
+	 */
+	public void registerTransfer(String fileId, int index);
 }

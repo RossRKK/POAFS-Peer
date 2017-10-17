@@ -39,7 +39,7 @@ public class PoafsFile {
 	public void saveFile() throws IOException {
 		String path = "files" + File.separator + id;
 		File folder = new File(path);
-		folder.mkdir();
+		folder.mkdirs();
 		
 		for (int i = 0; i < blocks.size(); i++) {
 			blocks.get(i).save(path);
