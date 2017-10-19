@@ -73,7 +73,7 @@ public class FileManager {
 			for (String blockFilePath:holdingFolder.list()) {				
 				BufferedInputStream in = new BufferedInputStream(new FileInputStream(holdingFolder.getPath() + File.separator + blockFilePath));
 				
-				String contentId = readLine(in);
+				String originId = readLine(in);
 				
 				String lengthStr = readLine(in);
 				int length = Integer.parseInt(lengthStr.split(":")[1]);
@@ -89,13 +89,13 @@ public class FileManager {
 					byte[] content = new byte[length];
 					in.read(content);
 					
-					block = new EncryptedFileBlock("origin-peer", content, index, wrappedKey);
+					block = new EncryptedFileBlock(originId, content, index, wrappedKey);
 				} else {
 					//this is an plain block
 					byte[] content = new byte[length];
 					in.read(content);
 					
-					block = new FileBlock("origin-peer", content, index);
+					block = new FileBlock(originId, content, index);
 				}
 				file.addBlock(block);
 				
