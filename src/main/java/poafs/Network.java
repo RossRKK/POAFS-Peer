@@ -54,14 +54,16 @@ public class Network {
 	public Network(String hostname, int port) throws IOException {
 		this.auth = new NetAuthenticator(hostname, port, false);
 		
-		localEncrypter = auth.registerPeer();
-		
 		//start the local server
 		new Thread(new Server(Reference.DEFAULT_PORT, fileManager)).start();
 	}
 	
 	public boolean login(String user, String pass) {
-		return auth.authoriseUser(user, pass);
+		boolean authorised =  auth.authoriseUser(user, pass);
+		
+		localEncrypter = auth.registerPeer();
+		
+		return authorised;
 	}
 	
 	/**
@@ -110,14 +112,8 @@ public class Network {
 		System.out.println("Registered");
 	}
 
-	public void listFiles() {
-		List<FileMeta> files = auth.listFiles();
-		
-		for (FileMeta f:files) {
-			System.out.println(f.getFileName() + " " + f.getId());
-		}
-		
-		System.out.println("End");
+	public List<FileMeta> listFiles() {
+		return auth.listFiles();
 	}
 	
 	public PoafsFileStream fetchFile(String fileId) {

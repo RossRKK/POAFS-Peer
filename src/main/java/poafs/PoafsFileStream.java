@@ -65,7 +65,7 @@ public class PoafsFileStream extends InputStream {
 	/**
 	 * The poafs file that is being loaded.
 	 */
-	private HashMap<Integer, FileBlock> fileContent;
+	private HashMap<Integer, FileBlock> fileContent = new HashMap<Integer, FileBlock>();;
 	
 	public PoafsFileStream(String fileId, int preloadDistance, IAuthenticator auth) {
 		this.auth = auth;
@@ -87,22 +87,32 @@ public class PoafsFileStream extends InputStream {
 		}
 	}
 	
+	/**
+	 * Step to the next block.
+	 * @return Whether there was a next block to step to.
+	 */
 	private boolean stepToNextBlock() {
-		if (currentReadBlockIndex < info.getLength()) {
+		//check that the next block exists
+		if (currentReadBlockIndex + 1 < info.getLength()) {
 			//increment the counters
 			currentReadBlockIndex ++;
 			currentReadIndex = 0;
 			
-			if (currentFetchIndex < info.getLength()) {
+			//keep the fetchers up to date
+			if (currentFetchIndex + 1 < info.getLength()) {
 				currentFetchIndex ++;
 				startFetcher();
 			}
+
 			return true;
 		} else {
 			return false;
 		}
 	}
 	
+	/**
+	 * Start up a new block fetcher.
+	 */
 	private void startFetcher() {
 		//start up a new block fetcher
 		BlockFetcher bf = new BlockFetcher(fileId, currentFetchIndex, auth, fileContent);
@@ -113,13 +123,29 @@ public class PoafsFileStream extends InputStream {
 	@Override
 	public int read() throws IOException {
 		try {
-			return fileContent.get(currentReadBlockIndex).getContent()[currentReadIndex];
+			//wait until the fetcher has finished getting the block before allowing the read
+			BlockFetcher fetcher = fetchers.get(currentReadBlockIndex);
+			synchronized (fetcher) {
+				while (fileContent.get(currentReadBlockIndex) == null) {
+					fetcher.wait();
+				}
+				
+				int output = fileContent.get(currentReadBlockIndex).getContent()[currentReadIndex];
+				//move the read head
+				currentReadIndex ++;
+				
+				return output;
+			}
 		} catch (IndexOutOfBoundsException e) {
+			//move to the next block
 			if (stepToNextBlock()) {
 				return read();
 			} else {
 				return -1;
 			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			return -1;
 		}
 	}
 }
@@ -149,6 +175,9 @@ class  BlockFetcher implements Runnable {
 	public void run() {
 		try {
 			fileContent.put(index, decryptBlock(getBlock(fileId, index)));
+			synchronized (this) {
+				this.notifyAll();
+			}
 		} catch (IOException e) {
 			System.err.println("Error fetching block: " + fileId + ":" + index);
 		}
