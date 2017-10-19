@@ -22,17 +22,17 @@ public class FileBlock {
 	/**
 	 * The unique id of the peer this block originated from.
 	 */
-	private String originPeerId;
+	protected String originPeerId;
 	
 	/**
 	 * The content of the block.
 	 */
-	private byte[] content;
+	protected byte[] content;
 	
 	/**
 	 * The position this block has in the file.
 	 */
-	private int index;
+	protected int index;
 
 	public String getOriginPeerId() {
 		return originPeerId;
@@ -47,15 +47,13 @@ public class FileBlock {
 	}
 	
 	protected String getHeaders() {
-		return originPeerId;
+		return originPeerId + "\nblock length:" + content.length;
 	}
 
 	public void save(String path) throws IOException {
 		PrintWriter out = new PrintWriter(new FileOutputStream(path + File.separator + index));
 		
 		out.println(getHeaders());
-		
-		out.println();
 		
 		out.println(new String(content));
 		

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import poafs.lib.Reference;
+
 /**
  * A file that represents a file as it was download from the network.
  * @author rossrkk
@@ -37,7 +39,7 @@ public class PoafsFile {
 	 * @throws IOException 
 	 */
 	public void saveFile() throws IOException {
-		String path = "files" + File.separator + id;
+		String path = Reference.FILE_PATH + File.separator + id;
 		File folder = new File(path);
 		folder.mkdirs();
 		

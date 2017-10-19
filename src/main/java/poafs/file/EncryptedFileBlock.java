@@ -18,6 +18,6 @@ public class EncryptedFileBlock extends FileBlock {
 	
 	@Override
 	protected String getHeaders() {
-		return super.getHeaders() + "\n" + new String(wrappedKey);
+		return originPeerId + "\nkey length:" + wrappedKey.length + "\n" + new String(wrappedKey) + "\nblock length:" + content.length;
 	}
 }

@@ -12,4 +12,6 @@ public class Reference {
 	public static final int BLOCK_SIZE = 1024;
 
 	public static final String CONFIG_PATH = "config.properties";
+
+	public static final String FILE_PATH = "files";
 }
