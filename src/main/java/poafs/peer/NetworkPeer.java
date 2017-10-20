@@ -41,7 +41,7 @@ public class NetworkPeer implements IPeer {
 	 * @return The line from the input
 	 * @throws IOException
 	 */
-	private String readLine() throws IOException {
+	private synchronized String readLine() throws IOException {
 		//the input directly from the input stream
 		int input;
 		//the line that we want to return
@@ -64,7 +64,7 @@ public class NetworkPeer implements IPeer {
 	}
 
 	@Override
-	public void openConnection() throws UnknownHostException, IOException {
+	public synchronized void openConnection() throws UnknownHostException, IOException {
 		System.out.println(host + ":" + port);
 		s = new Socket(host, port);
 		
@@ -94,7 +94,7 @@ public class NetworkPeer implements IPeer {
 	 * @return The relevant block.
 	 */
 	@Override
-	public FileBlock requestBlock(String fileId, int index) {
+	public synchronized FileBlock requestBlock(String fileId, int index) {
 		String request = fileId + ":" + index;
 		
 		FileBlock block = null;
@@ -118,7 +118,7 @@ public class NetworkPeer implements IPeer {
 	 * @return The required block.
 	 * @throws IOException 
 	 */
-	private FileBlock readResponse(int index) throws IOException {
+	private synchronized FileBlock readResponse(int index) throws IOException {
 		String response = readLine();
 		System.out.println("Peer Recieved Response: " + response);
 		
@@ -159,13 +159,13 @@ public class NetworkPeer implements IPeer {
 
 
 	@Override
-	public void sendBlock(String fileId, FileBlock block) {
+	public synchronized void sendBlock(String fileId, FileBlock block) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public String getId() {
+	public synchronized String getId() {
 		// TODO Auto-generated method stub
 		return null;
 	}

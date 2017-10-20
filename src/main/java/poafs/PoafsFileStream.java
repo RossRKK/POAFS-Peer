@@ -35,7 +35,7 @@ public class PoafsFileStream extends InputStream {
 	/**
 	 * The block that is currently being read from.
 	 */
-	private int currentFetchIndex = 0;
+	private int nextFetchIndex = 0;
 	
 	/**
 	 * The block that is currently being read from.
@@ -82,8 +82,6 @@ public class PoafsFileStream extends InputStream {
 	private void initialFetch() {
 		for (int i = 0; i < preloadDistance; i++) {
 			startFetcher();
-			
-			currentFetchIndex = i;
 		}
 	}
 	
@@ -99,8 +97,7 @@ public class PoafsFileStream extends InputStream {
 			currentReadIndex = 0;
 			
 			//keep the fetchers up to date
-			if (currentFetchIndex + 1 < info.getLength()) {
-				currentFetchIndex ++;
+			if (nextFetchIndex < info.getLength()) {
 				startFetcher();
 			}
 
@@ -115,9 +112,10 @@ public class PoafsFileStream extends InputStream {
 	 */
 	private void startFetcher() {
 		//start up a new block fetcher
-		BlockFetcher bf = new BlockFetcher(fileId, currentFetchIndex, auth, fileContent);
-		fetchers.put(currentFetchIndex, bf);
+		BlockFetcher bf = new BlockFetcher(fileId, nextFetchIndex, auth, fileContent);
+		fetchers.put(nextFetchIndex, bf);
 		new Thread(bf).start();
+		nextFetchIndex++;
 	}
 
 	@Override
@@ -125,6 +123,12 @@ public class PoafsFileStream extends InputStream {
 		try {
 			//wait until the fetcher has finished getting the block before allowing the read
 			BlockFetcher fetcher = fetchers.get(currentReadBlockIndex);
+			
+			//TODO this shouldn't have to happen
+			if (fetcher == null) {
+				startFetcher();
+			}
+			
 			synchronized (fetcher) {
 				while (fileContent.get(currentReadBlockIndex) == null) {
 					fetcher.wait();
@@ -215,6 +219,7 @@ class  BlockFetcher implements Runnable {
 	 */
 	private FileBlock getBlock(String fileId, int block) throws IOException {
 		Random r = new Random();
+		System.out.println("Attempting to fetch block: " + fileId + ":" + block);
 		List<String> peerIds = auth.findBlock(fileId, block);
 		String peerId = null;
 		

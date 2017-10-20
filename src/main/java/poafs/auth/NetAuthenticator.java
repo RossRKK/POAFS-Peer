@@ -44,7 +44,7 @@ public class NetAuthenticator implements IAuthenticator {
 		} else {
 			s = new Socket(host, port);
 		}
-        
+		
         //create the input and output streams
         in = new BufferedInputStream(s.getInputStream());
         out = new PrintWriter(s.getOutputStream());
@@ -62,7 +62,7 @@ public class NetAuthenticator implements IAuthenticator {
 	 * @return The line from the input
 	 * @throws IOException
 	 */
-	private String readLine() {
+	private synchronized String readLine() {
 		try {
 			//the input directly from the input stream
 			int input;
@@ -90,7 +90,7 @@ public class NetAuthenticator implements IAuthenticator {
 	}
 
 	@Override
-	public IDecrypter getKeyForPeer(String peerId) {
+	public synchronized IDecrypter getKeyForPeer(String peerId) {
 		try {
 			out.println("private-key " + peerId);
 			out.flush();
@@ -130,7 +130,7 @@ public class NetAuthenticator implements IAuthenticator {
 	 * @param peerId The id of the peer.
 	 * @return The hostname of the peer.
 	 */
-	public InetSocketAddress getHostForPeer(String peerId) {
+	public synchronized InetSocketAddress getHostForPeer(String peerId) {
 		out.println("host " + peerId);
 		
 		out.flush();
@@ -145,7 +145,7 @@ public class NetAuthenticator implements IAuthenticator {
 	}
 	
 	@Override
-	public boolean authoriseUser(String userName, String password) {
+	public synchronized boolean authoriseUser(String userName, String password) {
 		out.println("login " + userName);
 		out.println(password);
 		
@@ -157,7 +157,7 @@ public class NetAuthenticator implements IAuthenticator {
 	}
 
 	@Override
-	public List<FileMeta> listFiles() {
+	public synchronized List<FileMeta> listFiles() {
 		out.println("list-files *");
 		
 		out.flush();
@@ -181,7 +181,7 @@ public class NetAuthenticator implements IAuthenticator {
 	}
 
 	@Override
-	public FileMeta getInfoForFile(String fileId) {
+	public synchronized FileMeta getInfoForFile(String fileId) {
 		out.println("file-info " + fileId);
 		out.flush();
 		System.out.println("Sent info request");
@@ -196,7 +196,7 @@ public class NetAuthenticator implements IAuthenticator {
 	}
 
 	@Override
-	public List<String> findBlock(String fileId, int blockIndex) {
+	public synchronized List<String> findBlock(String fileId, int blockIndex) {
 		out.println("find-block " + fileId + ":" + blockIndex);
 		out.flush();
 		
@@ -213,7 +213,7 @@ public class NetAuthenticator implements IAuthenticator {
 	}
 
 	@Override
-	public void registerFile(PoafsFile file, String fileName) {
+	public synchronized void registerFile(PoafsFile file, String fileName) {
 		out.println("register-file " + file.getId());
 		out.println("length:" + file.getNumBlocks());
 		out.println(fileName);
@@ -223,7 +223,7 @@ public class NetAuthenticator implements IAuthenticator {
 	}
 
 	@Override
-	public IEncrypter registerPeer() {
+	public synchronized IEncrypter registerPeer() {
 		out.println("register-peer " + Reference.DEFAULT_PORT);
 		out.flush();
 		
@@ -246,7 +246,7 @@ public class NetAuthenticator implements IAuthenticator {
 	}
 
 	@Override
-	public void registerTransfer(String fileId, int index) {
+	public synchronized void registerTransfer(String fileId, int index) {
 		out.println("register-transfer " + fileId + ":" + index);
 	}
 }
