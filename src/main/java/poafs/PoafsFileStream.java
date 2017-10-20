@@ -116,8 +116,8 @@ public class PoafsFileStream extends InputStream {
 	private void startFetcher() {
 		//start up a new block fetcher
 		BlockFetcher bf = new BlockFetcher(fileId, currentFetchIndex, auth, fileContent);
-		new Thread(bf).start();
 		fetchers.put(currentFetchIndex, bf);
+		new Thread(bf).start();
 	}
 
 	@Override

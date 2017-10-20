@@ -5,12 +5,12 @@ import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
 import javax.crypto.NoSuchPaddingException;
 
+import poafs.adapter.WebServer;
 import poafs.file.FileMeta;
 import poafs.local.PropertiesManager;
 
@@ -36,6 +36,8 @@ public class Application {
 		pm.loadProperties();
 		
 		net = new Network(args[0], Integer.parseInt(args[1]));
+		
+		new Thread(new WebServer(8080, net)).start();
 		
 		ui();
 	}
@@ -65,11 +67,11 @@ public class Application {
 						printFile(net.fetchFile(sc.nextLine()));
 						break;
 					case "register-file":
-					try {
-						net.registerFile(sc.nextLine(), sc.nextLine());
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+						try {
+							net.registerFile(sc.nextLine(), sc.nextLine());
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 						break;
 					case "exit":
 					case "quit":
