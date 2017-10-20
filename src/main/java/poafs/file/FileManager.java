@@ -1,11 +1,12 @@
 package poafs.file;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Base64;
 import java.util.HashMap;
+import java.util.Scanner;
 
 import poafs.lib.Reference;
 
@@ -63,39 +64,43 @@ public class FileManager {
 	 * @param fileId The id of the file.
 	 * @throws IOException 
 	 */
-	private void loadFile(String fileId) throws IOException {
+	private synchronized void loadFile(String fileId) throws IOException {
 		File holdingFolder = new File(Reference.FILE_PATH + File.separator + fileId);
 		
 		if (holdingFolder.exists()) {
 			PoafsFile file = new PoafsFile(fileId);
 			int index = 0;
 			for (String blockFilePath:holdingFolder.list()) {				
-				BufferedInputStream in = new BufferedInputStream(new FileInputStream(holdingFolder.getPath() + File.separator + blockFilePath));
+				Scanner sc = new Scanner(new FileInputStream(holdingFolder.getPath() + File.separator + blockFilePath));
 				
-				String originId = readLine(in);
+				String originId = sc.nextLine();
 				
-				String lengthStr = readLine(in);
-				int length = Integer.parseInt(lengthStr.split(":")[1]);
+				String keyOrBlock = sc.nextLine();
 				
 				FileBlock block;
-				if (lengthStr.contains("key")) {
+				if (keyOrBlock.contains("key")) {
 					//this is an encrypted block
-					byte[] wrappedKey = new byte[length];
-					in.read(wrappedKey);
+					String wrappedKey64 = sc.nextLine();
 					
-					lengthStr = readLine(in);
-					length = Integer.parseInt(lengthStr.split(":")[1]);
-					byte[] content = new byte[length];
-					in.read(content);
+					byte[] wrappedKey = Base64.getDecoder().decode(wrappedKey64);
+
+					keyOrBlock = sc.nextLine();
+					
+					String content64 = sc.nextLine();
+					
+					byte[] content = Base64.getDecoder().decode(content64);
 					
 					block = new EncryptedFileBlock(originId, content, index, wrappedKey);
 				} else {
 					//this is an plain block
-					byte[] content = new byte[length];
-					in.read(content);
+					String content64 = sc.nextLine();
+					
+					byte[] content = Base64.getDecoder().decode(content64);
 					
 					block = new FileBlock(originId, content, index);
 				}
+				
+				sc.close();
 				file.addBlock(block);
 				
 				index++;

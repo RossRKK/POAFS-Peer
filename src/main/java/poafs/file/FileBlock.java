@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Base64;
 
 /**
  * A class that represents a single block of a file from a remote peer.
@@ -47,7 +48,7 @@ public class FileBlock {
 	}
 	
 	protected String getHeaders() {
-		return originPeerId + "\nblock length:" + content.length;
+		return originPeerId + "\nblock";
 	}
 
 	public void save(String path) throws IOException {
@@ -55,7 +56,9 @@ public class FileBlock {
 		
 		out.println(getHeaders());
 		
-		out.println(new String(content));
+		String base64Encoded = Base64.getEncoder().encodeToString(content);
+		
+		out.println(base64Encoded);
 		
 		out.close();
 	}

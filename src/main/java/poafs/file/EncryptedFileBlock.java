@@ -1,5 +1,7 @@
 package poafs.file;
 
+import java.util.Base64;
+
 public class EncryptedFileBlock extends FileBlock {
 	
 	public EncryptedFileBlock(String originPeerId, byte[] content, int index, byte[] wrappedKey) {
@@ -18,6 +20,7 @@ public class EncryptedFileBlock extends FileBlock {
 	
 	@Override
 	protected String getHeaders() {
-		return originPeerId + "\nkey length:" + wrappedKey.length + "\n" + new String(wrappedKey) + "\nblock length:" + content.length;
+		String base64Encoded = Base64.getEncoder().encodeToString(wrappedKey);
+		return originPeerId + "\nkey\n"+ base64Encoded + "\nblock";
 	}
 }
