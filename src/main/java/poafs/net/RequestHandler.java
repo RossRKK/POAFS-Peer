@@ -1,9 +1,10 @@
 package poafs.net;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Base64;
 import java.util.Scanner;
 
 import poafs.Application;
@@ -18,7 +19,8 @@ public class RequestHandler implements Runnable {
 	 */
 	private Socket sock;
 	
-	BufferedOutputStream out;
+	//BufferedOutputStream out;
+	private PrintWriter out;
 	
 	Scanner in;
 	
@@ -28,7 +30,8 @@ public class RequestHandler implements Runnable {
 		sock.setKeepAlive(true);
 		
 		try {
-			out = new BufferedOutputStream(sock.getOutputStream());
+			//out = new BufferedOutputStream(sock.getOutputStream());
+			out = new PrintWriter(sock.getOutputStream());
 			in = new Scanner(sock.getInputStream());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -40,10 +43,10 @@ public class RequestHandler implements Runnable {
 		try {
 			
 			//print some headers
-			out.write("POAFS Version 0.1\n".getBytes());
-			System.out.println("Server: " + "POAFS Version 0.1");
-			out.write((Application.getPropertiesManager().getPeerId() + "\n").getBytes());
-			System.out.println("Server: " + Application.getPropertiesManager().getPeerId());
+			//out.write("POAFS Version 0.1\n".getBytes());
+			out.println("POAFS Version 0.1");
+			//out.write((Application.getPropertiesManager().getPeerId() + "\n").getBytes());
+			out.println(Application.getPropertiesManager().getPeerId());
 			
 			out.flush();
 			
@@ -53,7 +56,6 @@ public class RequestHandler implements Runnable {
 			//read all requests for file segments
 			while (in.hasNextLine()) {
 				String request = in.nextLine();
-				System.out.println("Server Recieved: " + request);
 				
 				//requests should take the form <file id>:<block index>
 				String[] info = request.split(":");
@@ -63,16 +65,14 @@ public class RequestHandler implements Runnable {
 				EncryptedFileBlock block = (EncryptedFileBlock) fm.getFileBlock(fileId, blockIndex);
 				
 				println("key length:" + block.getWrappedKey().length);
-				System.out.println("Server: " + "key length:" + block.getWrappedKey().length);
 				
-				out.write(block.getWrappedKey());
-				System.out.println("Server: " + new String(block.getWrappedKey()));
+				//out.write(block.getWrappedKey());
+				out.println(Base64.getEncoder().encodeToString(block.getWrappedKey()));
 				
 				println("block length:" + block.getContent().length);
-				System.out.println("Server: " + "block length:" + block.getContent().length);
 				
-				out.write(block.getContent());
-				System.out.println("Server: " + new String(block.getContent()));
+				//out.write(block.getContent());
+				out.println(Base64.getEncoder().encodeToString(block.getContent()));
 				
 				out.flush();
 			}
@@ -91,7 +91,8 @@ public class RequestHandler implements Runnable {
 	}
 	
 	private void println(String str) throws IOException {
-		out.write((str + "\r\n").getBytes());
+		//out.write((str + "\r\n").getBytes());
+		out.println(str);
 		
 		out.flush();
 	}

@@ -117,6 +117,6 @@ public class Network {
 	}
 	
 	public PoafsFileStream fetchFile(String fileId) {
-		return new PoafsFileStream(fileId, blockLength, auth);
+		return new PoafsFileStream(fileId, 5, auth);
 	}
 }

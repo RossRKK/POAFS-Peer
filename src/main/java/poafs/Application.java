@@ -1,5 +1,6 @@
 package poafs;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
@@ -66,6 +67,9 @@ public class Application {
 					case "load":
 						printFile(net.fetchFile(sc.nextLine()));
 						break;
+					case "save":
+						saveFile(net.fetchFile(sc.nextLine()));
+						break;
 					case "register-file":
 						try {
 							net.registerFile(sc.nextLine(), sc.nextLine());
@@ -89,6 +93,41 @@ public class Application {
 		sc.close();
 	}
 	
+	private static void saveFile(InputStream fileStream) {
+		int in;
+		try {
+			FileOutputStream out = new FileOutputStream("file");
+			List<Byte> contents = new ArrayList<Byte>();
+			in = fileStream.read();
+		
+			while (in != -1) {
+				contents.add((byte) (in - 128));
+				
+				in = fileStream.read();
+			}
+			
+			System.out.println("File Read");
+			
+			byte[] bytes = new byte[contents.size()];
+			for (int i = 0; i < contents.size(); i++) {
+				bytes[i] = contents.get(i);
+			}
+			
+			long startTime = System.currentTimeMillis();
+			
+			out.write(bytes);
+			out.flush();
+			
+			long time = System.currentTimeMillis() - startTime;
+			
+			System.out.println("Write took " + time + "ms");
+			
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	private static void printFile(InputStream fileStream) {
 		int in;
 		try {

@@ -12,6 +12,7 @@ import javax.crypto.SecretKey;
 
 import poafs.file.EncryptedFileBlock;
 import poafs.file.FileBlock;
+import poafs.lib.Reference;
 
 public class HybridDecrypter implements IDecrypter{
 	/**
@@ -20,7 +21,7 @@ public class HybridDecrypter implements IDecrypter{
 	private Cipher rsa;
 	
 	public HybridDecrypter(PrivateKey rsaKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
-		rsa = Cipher.getInstance("RSA");
+		rsa = Cipher.getInstance(Reference.RSA_CIPHER);
 		
 		rsa.init(Cipher.UNWRAP_MODE, rsaKey);
 	}
@@ -32,7 +33,7 @@ public class HybridDecrypter implements IDecrypter{
 	 * @throws InvalidKeyException 
 	 */
 	private SecretKey unwrapKey(byte[] wrappedKey) throws InvalidKeyException, NoSuchAlgorithmException {
-		return (SecretKey)rsa.unwrap(wrappedKey, "AES", Cipher.SECRET_KEY);
+		return (SecretKey)rsa.unwrap(wrappedKey, Reference.AES_CIPHER, Cipher.SECRET_KEY);
 	}
 
 	/**
@@ -49,7 +50,7 @@ public class HybridDecrypter implements IDecrypter{
 	public FileBlock decrypt(EncryptedFileBlock block) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException  {
 		SecretKey aesKey = unwrapKey(block.getWrappedKey());
 		
-		Cipher aes = Cipher.getInstance("AES");
+		Cipher aes = Cipher.getInstance(Reference.AES_CIPHER);
 		
 		aes.init(Cipher.DECRYPT_MODE, aesKey);
 		

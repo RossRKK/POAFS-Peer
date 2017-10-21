@@ -139,6 +139,11 @@ public class Tests {
 		file.saveFile();
 	}
 	
+	@Test
+	public void blockingTest() {
+		
+	}
+	
 	
 	/**
 	 * This test basically just tests everything, it is completely ridiculous.

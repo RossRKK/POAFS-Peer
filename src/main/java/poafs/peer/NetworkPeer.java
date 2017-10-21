@@ -1,11 +1,12 @@
 package poafs.peer;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Base64;
+import java.util.Scanner;
 
 import poafs.Application;
 import poafs.file.EncryptedFileBlock;
@@ -26,7 +27,7 @@ public class NetworkPeer implements IPeer {
 	
 	private PrintWriter out;
 	
-	private BufferedInputStream in;
+	private Scanner sc;
 	
 	private String id;
 
@@ -41,7 +42,7 @@ public class NetworkPeer implements IPeer {
 	 * @return The line from the input
 	 * @throws IOException
 	 */
-	private synchronized String readLine() throws IOException {
+	/*private synchronized String readLine() throws IOException {
 		//the input directly from the input stream
 		int input;
 		//the line that we want to return
@@ -61,28 +62,24 @@ public class NetworkPeer implements IPeer {
 		
 		//return the line
 		return line;
-	}
+	}*/
 
 	@Override
 	public synchronized void openConnection() throws UnknownHostException, IOException {
-		System.out.println(host + ":" + port);
 		s = new Socket(host, port);
 		
 		out = new PrintWriter(s.getOutputStream());		
 		
-		in = new BufferedInputStream(s.getInputStream());
+		//in = new BufferedInputStream(s.getInputStream());
+		sc = new Scanner(s.getInputStream());
 		
 		//print some headers
 		out.println("POAFS Version 0.1");
-		System.out.println("Peer: " + "POAFS Version 0.1");
 		out.println(Application.getPropertiesManager().getPeerId());
-		System.out.println("Peer: " + Application.getPropertiesManager().getPeerId());
 		
-		String versionDec = readLine();
-		System.out.println("Peer Recieve Version: " + versionDec);
+		String versionDec = sc.nextLine();
 
-		String peerId = readLine();
-		System.out.println("Peer Recieved ID: " + peerId);
+		String peerId = sc.nextLine();
 
 	}
 
@@ -100,7 +97,6 @@ public class NetworkPeer implements IPeer {
 		FileBlock block = null;
 		
 		out.println(request);
-		System.out.println("Peer: " + request);
 		
 		out.flush();
 		
@@ -119,8 +115,8 @@ public class NetworkPeer implements IPeer {
 	 * @throws IOException 
 	 */
 	private synchronized FileBlock readResponse(int index) throws IOException {
-		String response = readLine();
-		System.out.println("Peer Recieved Response: " + response);
+		
+		String response = sc.nextLine();
 		
 		//figure out if this response contains a key we need to parse
 		boolean isKey = response.contains("key");
@@ -130,27 +126,35 @@ public class NetworkPeer implements IPeer {
 		
 		if (isKey) {
 			//read in the wrapped key
-			byte[] wrappedKey = new byte[length];
-			in.read(wrappedKey);
+			//byte[] wrappedKey = new byte[length];
+			//in.read(wrappedKey);
+			
+			String wrappedKey64 = sc.nextLine();
+			byte[] wrappedKey = Base64.getDecoder().decode(wrappedKey64);
 			
 			//read the info about the actual content
-			response = readLine();
+			response = sc.nextLine();
 			
-			System.out.println("Peer Recieved Response: " + response);
 			
 			//figure out the length of the content
 			length = Integer.parseInt(response.split(":")[1]);
 			
 			//read in the conent
-			byte[] content = new byte[length];
-			in.read(content);
+			//byte[] content = new byte[length];
+			//in.read(content);
+			
+			String content64 = sc.nextLine();
+			byte[] content = Base64.getDecoder().decode(content64);
 			
 			//return the encrypted block
 			return new EncryptedFileBlock(id, content, index, wrappedKey);
 		} else {
 			//read in the content of the block
-			byte[] content = new byte[length];
-			in.read(content);
+			//byte[] content = new byte[length];
+			//in.read(content);
+			
+			String content64 = sc.nextLine();
+			byte[] content = Base64.getDecoder().decode(content64);
 			
 			//return the relevant block
 			return new FileBlock(id, content, index);

@@ -14,6 +14,7 @@ import javax.crypto.SecretKey;
 import poafs.Application;
 import poafs.file.EncryptedFileBlock;
 import poafs.file.FileBlock;
+import poafs.lib.Reference;
 import poafs.local.PropertiesManager;
 
 public class HybridEncrypter implements IEncrypter {
@@ -23,7 +24,7 @@ public class HybridEncrypter implements IEncrypter {
 	private Cipher rsa;
 	
 	public HybridEncrypter(PublicKey rsaKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
-		rsa = Cipher.getInstance("RSA");
+		rsa = Cipher.getInstance(Reference.RSA_CIPHER);
 		
 		rsa.init(Cipher.WRAP_MODE, rsaKey);
 	}
@@ -34,7 +35,7 @@ public class HybridEncrypter implements IEncrypter {
 	 */
 	private SecretKey genAesKey() {
 		try {
-			KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+			KeyGenerator keyGen = KeyGenerator.getInstance(Reference.AES_CIPHER);
 			keyGen.init(256);
 			return keyGen.generateKey();
 		} catch (Exception e) {
@@ -56,7 +57,7 @@ public class HybridEncrypter implements IEncrypter {
 	public EncryptedFileBlock encrypt(FileBlock block) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
 		SecretKey aesKey = genAesKey();
 		
-		Cipher aes = Cipher.getInstance("AES");
+		Cipher aes = Cipher.getInstance(Reference.AES_CIPHER);
 		
 		aes.init(Cipher.ENCRYPT_MODE, aesKey);
 		

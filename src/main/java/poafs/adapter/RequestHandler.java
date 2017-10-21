@@ -3,13 +3,17 @@ package poafs.adapter;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import poafs.Network;
+import poafs.lib.Reference;
 
 /**
  * This is a class that handles an incoming request.
@@ -121,21 +125,30 @@ public class RequestHandler implements Runnable {
 		
 		int index = 1;
 		int currentByte = file.read();
-		
+		List<Byte> contents = new ArrayList<Byte>();
 		while (currentByte != -1) {
-			out.writeByte(currentByte);
+			//out.writeByte(currentByte);
+			contents.add((byte) (currentByte - 128));
 			
 			currentByte = file.read();
 			
-			if (index % 256 == 0) {
-				System.out.println("Sent " + index + " bytes");
+			if (index % Reference.BLOCK_SIZE == 0) {
+				
+				byte[] bytes = new byte[contents.size()];
+				for (int i = 0; i < contents.size(); i++) {
+					bytes[i] = contents.get(i);
+				}
+				
+				contents = new ArrayList<Byte>();
+				
+				out.write(bytes);
+				
 				out.flush();
 			}
 			
 			index ++;
 		}
-		
-		out.flush();
+	
 	}
 	
 	/**

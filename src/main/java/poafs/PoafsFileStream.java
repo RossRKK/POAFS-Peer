@@ -124,11 +124,6 @@ public class PoafsFileStream extends InputStream {
 			//wait until the fetcher has finished getting the block before allowing the read
 			BlockFetcher fetcher = fetchers.get(currentReadBlockIndex);
 			
-			//TODO this shouldn't have to happen
-			if (fetcher == null) {
-				startFetcher();
-			}
-			
 			synchronized (fetcher) {
 				while (fileContent.get(currentReadBlockIndex) == null) {
 					fetcher.wait();
@@ -138,7 +133,7 @@ public class PoafsFileStream extends InputStream {
 				//move the read head
 				currentReadIndex ++;
 				
-				return output;
+				return output + 128;
 			}
 		} catch (IndexOutOfBoundsException e) {
 			//move to the next block
@@ -160,11 +155,15 @@ public class PoafsFileStream extends InputStream {
  */
 class  BlockFetcher implements Runnable {
 	
+	private static final int ATTEMPT_LIMIT = 3;
+	
 	private IAuthenticator auth;
 	
 	private String fileId;
 	
 	private int index;
+	
+	private int attempt = 0;
 	
 	private HashMap<Integer, FileBlock> fileContent;
 	
@@ -177,8 +176,24 @@ class  BlockFetcher implements Runnable {
 
 	@Override
 	public void run() {
+		System.out.println("Fetching " + fileId + ":" + index);
 		try {
-			fileContent.put(index, decryptBlock(getBlock(fileId, index)));
+			FileBlock block = decryptBlock(getBlock(fileId, index));
+			
+			
+			if (block == null) {
+				if (attempt < ATTEMPT_LIMIT) {
+					System.out.println("Error reading: " + fileId + ":" + index + " retrying");
+					attempt++;
+					
+					run();
+				} else {
+					System.out.println("Failed to read: " + fileId + ":" + index + " after " + attempt + " attempts");
+					fileContent.put(index, block);
+				}
+			} else {
+				fileContent.put(index, block);
+			}
 			synchronized (this) {
 				this.notifyAll();
 			}
@@ -193,15 +208,25 @@ class  BlockFetcher implements Runnable {
 	 * @return The decrypted file block.
 	 */
 	private FileBlock decryptBlock(FileBlock block) {
+		long startTime = System.currentTimeMillis();
 		if (block instanceof EncryptedFileBlock) {
 			String peerId = block.getOriginPeerId();
 			
 			IDecrypter d = auth.getKeyForPeer(peerId);
 			
 			try {
-				return d.decrypt((EncryptedFileBlock)block);
+				
+				long time = System.currentTimeMillis() - startTime;
+				
+				FileBlock out = d.decrypt((EncryptedFileBlock)block);
+				
+				System.out.println("Decrypt for " + fileId + ":" + index + " took " + 
+						time + "ms " + ((double)time)/out.getContent().length + "B/ms");
+				
+				return out;
 			} catch (Exception e) {
-				System.out.println("Error reading: " + fileId + ":" + index);
+				System.out.println("Error decrypting " + fileId + ":" + index);
+				System.out.println(block.getContent().length);
 				e.printStackTrace();
 				return null;
 			}
@@ -218,8 +243,9 @@ class  BlockFetcher implements Runnable {
 	 * @throws IOException 
 	 */
 	private FileBlock getBlock(String fileId, int block) throws IOException {
+		long startTime = System.currentTimeMillis();
+		
 		Random r = new Random();
-		System.out.println("Attempting to fetch block: " + fileId + ":" + block);
 		List<String> peerIds = auth.findBlock(fileId, block);
 		String peerId = null;
 		
@@ -238,7 +264,14 @@ class  BlockFetcher implements Runnable {
 				
 				connected = true;
 				
-				return peer.requestBlock(fileId, block);
+				FileBlock out = peer.requestBlock(fileId, block);
+				
+				long time = System.currentTimeMillis() - startTime;
+				
+				System.out.println("Fetch for " + fileId + ":" + index + " took " + 
+						time + "ms " + ((double)time)/out.getContent().length + "B/ms");
+				
+				return out;
 			} catch (IOException e) {
 				System.err.println(peerId + " was unreachable");
 				peerIds.remove(peerId);
