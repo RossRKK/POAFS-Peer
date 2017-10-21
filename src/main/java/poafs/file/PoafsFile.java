@@ -2,8 +2,7 @@ package poafs.file;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 import poafs.lib.Reference;
 
@@ -23,7 +22,7 @@ public class PoafsFile {
 	/**
 	 * A list of all the blocks in this file.
 	 */
-	private List<FileBlock> blocks = new ArrayList<FileBlock>();
+	private HashMap<Integer, FileBlock> blocks = new HashMap<Integer, FileBlock>();
 	
 	
 	/**
@@ -31,7 +30,7 @@ public class PoafsFile {
 	 * @param block The block to be added.
 	 */
 	public void addBlock(FileBlock block) {
-		blocks.add(block.getIndex(), block);
+		blocks.put(block.getIndex(), block);
 	}
 	
 	/**
@@ -58,7 +57,7 @@ public class PoafsFile {
 		return blocks.size();
 	}
 	
-	public List<FileBlock> getBlocks() {
+	public HashMap<Integer, FileBlock> getBlocks() {
 		return blocks;
 	}
 }

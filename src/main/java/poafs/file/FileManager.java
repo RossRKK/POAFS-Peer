@@ -69,7 +69,7 @@ public class FileManager {
 		
 		if (holdingFolder.exists()) {
 			PoafsFile file = new PoafsFile(fileId);
-			int index = 0;
+		
 			for (String blockFilePath:holdingFolder.list()) {				
 				Scanner sc = new Scanner(new FileInputStream(holdingFolder.getPath() + File.separator + blockFilePath));
 				
@@ -90,20 +90,18 @@ public class FileManager {
 					
 					byte[] content = Base64.getDecoder().decode(content64);
 					
-					block = new EncryptedFileBlock(originId, content, index, wrappedKey);
+					block = new EncryptedFileBlock(originId, content, Integer.parseInt(blockFilePath), wrappedKey);
 				} else {
 					//this is an plain block
 					String content64 = sc.nextLine();
 					
 					byte[] content = Base64.getDecoder().decode(content64);
 					
-					block = new FileBlock(originId, content, index);
+					block = new FileBlock(originId, content, Integer.parseInt(blockFilePath));
 				}
 				
 				sc.close();
 				file.addBlock(block);
-				
-				index++;
 			}
 			
 			availableFiles.put(fileId, file);
