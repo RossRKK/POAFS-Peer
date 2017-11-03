@@ -3,19 +3,21 @@ package poafs;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import javax.crypto.NoSuchPaddingException;
+import javax.swing.SwingUtilities;
+
+import com.sun.jna.NativeLibrary;
 
 import poafs.adapter.WebServer;
 import poafs.exception.KeyException;
 import poafs.exception.ProtocolException;
 import poafs.file.FileMeta;
+import poafs.gui.VideoPlayer;
 import poafs.local.PropertiesManager;
+import uk.co.caprica.vlcj.discovery.NativeDiscovery;
 
 public class Application {
 	
@@ -42,6 +44,10 @@ public class Application {
 			net = new Network(args[0], Integer.parseInt(args[1]), Boolean.parseBoolean(args[2]));
 			
 			new Thread(new WebServer(8080, net)).start();
+			
+			//NativeLibrary.addSearchPath("vlc", "<libvlc-path>");
+			new NativeDiscovery().discover();
+	        
 			
 			ui();
 		} catch (ProtocolException e) {
@@ -92,6 +98,15 @@ public class Application {
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
+						break;
+					case "play":
+						String fileId = sc.nextLine();
+						SwingUtilities.invokeLater(new Runnable() {
+				            @Override
+				            public void run() {
+				                new VideoPlayer(net.fetchFile(fileId));
+				            }
+				        });
 						break;
 					case "exit":
 					case "quit":
