@@ -45,7 +45,7 @@ public class Application {
 			
 			new Thread(new WebServer(8080, net)).start();
 			
-			//NativeLibrary.addSearchPath("vlc", "<libvlc-path>");
+			//NativeLibrary.addSearchPath("vlc", "/usr/lib/vlc");
 			new NativeDiscovery().discover();
 	        
 			
@@ -100,11 +100,11 @@ public class Application {
 						}
 						break;
 					case "play":
-						String fileId = sc.nextLine();
+						PoafsFileStream stream = net.fetchFile(sc.nextLine());
 						SwingUtilities.invokeLater(new Runnable() {
 				            @Override
 				            public void run() {
-				                new VideoPlayer(net.fetchFile(fileId));
+				                new VideoPlayer(stream);
 				            }
 				        });
 						break;

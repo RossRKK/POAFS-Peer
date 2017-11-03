@@ -74,7 +74,9 @@ public class PoafsFileStream extends InputStream {
 	/**
 	 * The poafs file that is being loaded.
 	 */
-	private HashMap<Integer, FileBlock> fileContent = new HashMap<Integer, FileBlock>();;
+	private HashMap<Integer, FileBlock> fileContent = new HashMap<Integer, FileBlock>();
+	
+	private boolean ready = false;
 	
 	public PoafsFileStream(String fileId, int preloadDistance, IAuthenticator auth) {
 		try {
@@ -159,6 +161,11 @@ public class PoafsFileStream extends InputStream {
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+			return -1;
+		} catch (NullPointerException e) {
+			System.out.println(currentReadBlockIndex);
+			System.out.println(nextFetchIndex);
+			
 			return -1;
 		}
 	}
