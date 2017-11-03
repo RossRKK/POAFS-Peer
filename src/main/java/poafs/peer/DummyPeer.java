@@ -12,6 +12,7 @@ import poafs.cryto.HybridDecrypter;
 import poafs.cryto.HybridEncrypter;
 import poafs.cryto.IDecrypter;
 import poafs.cryto.IEncrypter;
+import poafs.exception.KeyException;
 import poafs.file.EncryptedFileBlock;
 import poafs.file.PoafsFile;
 import poafs.file.FileBlock;
@@ -33,8 +34,9 @@ public class DummyPeer implements IPeer {
 	 * @throws InvalidKeyException
 	 * @throws NoSuchAlgorithmException
 	 * @throws NoSuchPaddingException
+	 * @throws KeyException 
 	 */
-	public DummyPeer(String id, PublicKey publicKey, PrivateKey privateKey) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException {
+	public DummyPeer(String id, PublicKey publicKey, PrivateKey privateKey) throws KeyException {
 		this.id = id;
 		d = new HybridDecrypter(privateKey);
 		e = new HybridEncrypter(publicKey);

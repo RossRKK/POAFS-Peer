@@ -5,10 +5,17 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 import java.util.Scanner;
 
 import poafs.Application;
+import poafs.cryto.HybridDecrypter;
+import poafs.exception.KeyException;
+import poafs.exception.ProtocolException;
 import poafs.file.EncryptedFileBlock;
 import poafs.file.FileBlock;
 
@@ -37,50 +44,27 @@ public class NetworkPeer implements IPeer {
 		this.id = id;
 	}
 	
-	/**
-	 * Utility method to read a line from the input.
-	 * @return The line from the input
-	 * @throws IOException
-	 */
-	/*private synchronized String readLine() throws IOException {
-		//the input directly from the input stream
-		int input;
-		//the line that we want to return
-		String line = "";
-		
-		//loop until the character is a new line
-		while ((input = in.read()) != '\n') {
-			//append the character to the line
-			char character = new Character((char) input).charValue();
-			line += character;
-		}
-		
-		//tolerate carriage returns
-		if (line.endsWith("\r")) {
-			line = line.substring(0, line.length() - 1);
-		}
-		
-		//return the line
-		return line;
-	}*/
 
 	@Override
-	public synchronized void openConnection() throws UnknownHostException, IOException {
-		s = new Socket(host, port);
-		
-		out = new PrintWriter(s.getOutputStream());		
-		
-		//in = new BufferedInputStream(s.getInputStream());
-		sc = new Scanner(s.getInputStream());
-		
-		//print some headers
-		out.println("POAFS Version 0.1");
-		out.println(Application.getPropertiesManager().getPeerId());
-		
-		String versionDec = sc.nextLine();
+	public synchronized void openConnection() throws UnknownHostException, ProtocolException {
+		try {
+			s = new Socket(host, port);
+			
+			out = new PrintWriter(s.getOutputStream());		
+			
+			//in = new BufferedInputStream(s.getInputStream());
+			sc = new Scanner(s.getInputStream());
+			
+			//print some headers
+			out.println("POAFS Version 0.1");
+			out.println(Application.getPropertiesManager().getPeerId());
+			
+			String versionDec = sc.nextLine();
 
-		String peerId = sc.nextLine();
-
+			String peerId = sc.nextLine();
+		} catch (IOException | IndexOutOfBoundsException | NumberFormatException e) {
+			throw new ProtocolException("Error opening connection to peer " + id);
+		}
 	}
 
 	/**
@@ -89,75 +73,71 @@ public class NetworkPeer implements IPeer {
 	 * @param index The index of the block you want.
 	 * 
 	 * @return The relevant block.
+	 * @throws ProtocolException 
 	 */
 	@Override
-	public synchronized FileBlock requestBlock(String fileId, int index) {
-		String request = fileId + ":" + index;
-		
-		FileBlock block = null;
-		
-		out.println(request);
-		
-		out.flush();
-		
+	public synchronized FileBlock requestBlock(String fileId, int index) throws ProtocolException {
 		try {
-			block = readResponse(index);
-		} catch (IOException e) {
-			e.printStackTrace();
+			String request = fileId + ":" + index;
+			
+			FileBlock block = null;
+			
+			out.println(request);
+			
+			out.flush();
+			
+			return readResponse(index);
+		} catch (IndexOutOfBoundsException | NumberFormatException e) {
+			throw new ProtocolException("Error retrieving block from peer " + id);
 		}
-		
-		return block;
 	}
 
 	/**
 	 * Read a block from an input stream.
 	 * @return The required block.
-	 * @throws IOException 
+	 * @throws ProtocolException 
 	 */
-	private synchronized FileBlock readResponse(int index) throws IOException {
-		
-		String response = sc.nextLine();
-		
-		//figure out if this response contains a key we need to parse
-		boolean isKey = response.contains("key");
-		
-		//determine the length of the recieved content (key or block)
-		int length = Integer.parseInt(response.split(":")[1]);
-		
-		if (isKey) {
-			//read in the wrapped key
-			//byte[] wrappedKey = new byte[length];
-			//in.read(wrappedKey);
+	private synchronized FileBlock readResponse(int index) throws ProtocolException {
+		try {
+			String response = sc.nextLine();
 			
-			String wrappedKey64 = sc.nextLine();
-			byte[] wrappedKey = Base64.getDecoder().decode(wrappedKey64);
+			//figure out if this response contains a key we need to parse
+			boolean isKey = response.contains("key");
 			
-			//read the info about the actual content
-			response = sc.nextLine();
+			//determine the length of the recieved content (key or block)
+			int length = Integer.parseInt(response.split(":")[1]);
 			
-			
-			//figure out the length of the content
-			length = Integer.parseInt(response.split(":")[1]);
-			
-			//read in the conent
-			//byte[] content = new byte[length];
-			//in.read(content);
-			
-			String content64 = sc.nextLine();
-			byte[] content = Base64.getDecoder().decode(content64);
-			
-			//return the encrypted block
-			return new EncryptedFileBlock(id, content, index, wrappedKey);
-		} else {
-			//read in the content of the block
-			//byte[] content = new byte[length];
-			//in.read(content);
-			
-			String content64 = sc.nextLine();
-			byte[] content = Base64.getDecoder().decode(content64);
-			
-			//return the relevant block
-			return new FileBlock(id, content, index);
+			if (isKey) {
+				//read in the wrapped key
+				
+				String wrappedKey64 = sc.nextLine();
+				byte[] wrappedKey = Base64.getDecoder().decode(wrappedKey64);
+				
+				//read the info about the actual content
+				response = sc.nextLine();
+				
+				
+				//figure out the length of the content
+				length = Integer.parseInt(response.split(":")[1]);
+				
+				//read in the conent
+				
+				String content64 = sc.nextLine();
+				byte[] content = Base64.getDecoder().decode(content64);
+				
+				//return the encrypted block
+				return new EncryptedFileBlock(id, content, index, wrappedKey);
+			} else {
+				//read in the content of the block
+				
+				String content64 = sc.nextLine();
+				byte[] content = Base64.getDecoder().decode(content64);
+				
+				//return the relevant block
+				return new FileBlock(id, content, index);
+			}
+		} catch (IndexOutOfBoundsException | NumberFormatException e) {
+			throw new ProtocolException("Error retrieving block from peer " + id);
 		}
 	}
 
@@ -170,7 +150,6 @@ public class NetworkPeer implements IPeer {
 
 	@Override
 	public synchronized String getId() {
-		// TODO Auto-generated method stub
-		return null;
+		return id;
 	}
 }

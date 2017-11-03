@@ -20,6 +20,8 @@ import org.junit.Test;
 //import poafs.auth.DummyAuthenticator;
 import poafs.cryto.HybridDecrypter;
 import poafs.cryto.HybridEncrypter;
+import poafs.exception.KeyException;
+import poafs.exception.ProtocolException;
 import poafs.file.EncryptedFileBlock;
 import poafs.file.FileBlock;
 import poafs.file.FileManager;
@@ -69,7 +71,7 @@ public class Tests {
 	}
 	
 	@Test
-	public void hybridTest() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+	public void hybridTest() throws KeyException, NoSuchAlgorithmException {
 		KeyPair keys = buildRSAKeyPair();
 		
 		byte[] data = randomData(1024);
@@ -89,7 +91,7 @@ public class Tests {
 	
 	
 	@Test
-	public void peerTest() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+	public void peerTest() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, KeyException, ProtocolException {
 		KeyPair keys = buildRSAKeyPair();
 		
 		IPeer p = new DummyPeer("test-peer", keys.getPublic(), keys.getPrivate());
@@ -121,7 +123,7 @@ public class Tests {
 	}
 	
 	@Test
-	public void saveEncryptedTest() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
+	public void saveEncryptedTest() throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException, KeyException {
 		KeyPair keys = buildRSAKeyPair();
 		
 		byte[] data = "Hello, World!".getBytes();

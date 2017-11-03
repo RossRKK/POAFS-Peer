@@ -16,6 +16,8 @@ import javax.crypto.NoSuchPaddingException;
 import poafs.auth.IAuthenticator;
 import poafs.auth.NetAuthenticator;
 import poafs.cryto.IEncrypter;
+import poafs.exception.KeyException;
+import poafs.exception.ProtocolException;
 import poafs.file.EncryptedFileBlock;
 import poafs.file.FileBlock;
 import poafs.file.FileManager;
@@ -51,14 +53,14 @@ public class Network {
 	 */
 	private FileManager fileManager = new FileManager();
 	
-	public Network(String hostname, int port) throws IOException {
-		this.auth = new NetAuthenticator(hostname, port, false);
+	public Network(String hostname, int port, boolean ssl) throws ProtocolException {
+		this.auth = new NetAuthenticator(hostname, port, ssl);
 		
 		//start the local server
 		new Thread(new Server(Reference.DEFAULT_PORT, fileManager)).start();
 	}
 	
-	public boolean login(String user, String pass) {
+	public boolean login(String user, String pass) throws ProtocolException, KeyException {
 		boolean authorised =  auth.authoriseUser(user, pass);
 		
 		localEncrypter = auth.registerPeer();
@@ -75,7 +77,7 @@ public class Network {
 	 * @throws NoSuchAlgorithmException 
 	 * @throws InvalidKeyException 
 	 */
-	public void registerFile(String path, String fileName) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+	public void registerFile(String path, String fileName) throws IOException, ProtocolException, KeyException {
 		String id = UUID.randomUUID().toString();
 		System.out.println(id);
 		
@@ -112,7 +114,7 @@ public class Network {
 		System.out.println("Registered");
 	}
 
-	public List<FileMeta> listFiles() {
+	public List<FileMeta> listFiles() throws ProtocolException {
 		return auth.listFiles();
 	}
 	

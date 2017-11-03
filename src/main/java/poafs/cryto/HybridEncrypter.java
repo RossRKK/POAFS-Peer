@@ -12,6 +12,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 import poafs.Application;
+import poafs.exception.KeyException;
 import poafs.file.EncryptedFileBlock;
 import poafs.file.FileBlock;
 import poafs.lib.Reference;
@@ -23,23 +24,28 @@ public class HybridEncrypter implements IEncrypter {
 	 */
 	private Cipher rsa;
 	
-	public HybridEncrypter(PublicKey rsaKey) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
-		rsa = Cipher.getInstance(Reference.RSA_CIPHER);
+	public HybridEncrypter(PublicKey rsaKey) throws KeyException {
+		try {
+			rsa = Cipher.getInstance(Reference.RSA_CIPHER);
 		
-		rsa.init(Cipher.WRAP_MODE, rsaKey);
+		
+			rsa.init(Cipher.WRAP_MODE, rsaKey);
+		} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) {
+			throw new KeyException();
+		}
 	}
 	
 	/**
 	 * Generate a new aes key.
 	 * @return The new aes key.
 	 */
-	private SecretKey genAesKey() {
+	private SecretKey genAesKey() throws KeyException {
 		try {
 			KeyGenerator keyGen = KeyGenerator.getInstance(Reference.AES_CIPHER);
 			keyGen.init(256);
 			return keyGen.generateKey();
 		} catch (Exception e) {
-			return null;
+			throw new KeyException();
 		}
 	}
 	
@@ -47,24 +53,24 @@ public class HybridEncrypter implements IEncrypter {
 	 * Encrypt a file block.
 	 * @param block The block to be encrypted.
 	 * @return The resulting encrypted block.
-	 * @throws NoSuchAlgorithmException
-	 * @throws NoSuchPaddingException
-	 * @throws InvalidKeyException
-	 * @throws IllegalBlockSizeException
-	 * @throws BadPaddingException
+	 * @throws KeyException 
 	 */
 	@Override
-	public EncryptedFileBlock encrypt(FileBlock block) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-		SecretKey aesKey = genAesKey();
-		
-		Cipher aes = Cipher.getInstance(Reference.AES_CIPHER);
-		
-		aes.init(Cipher.ENCRYPT_MODE, aesKey);
-		
-		byte[] encryptedContent = aes.doFinal(block.getContent());
-		
-		byte[] wrappedKey = rsa.wrap(aesKey);
-		
-		return new EncryptedFileBlock(Application.getPropertiesManager().getPeerId(), encryptedContent, block.getIndex(), wrappedKey);
+	public EncryptedFileBlock encrypt(FileBlock block) throws KeyException  {
+		try {
+			SecretKey aesKey = genAesKey();
+			
+			Cipher aes = Cipher.getInstance(Reference.AES_CIPHER);
+			
+			aes.init(Cipher.ENCRYPT_MODE, aesKey);
+			
+			byte[] encryptedContent = aes.doFinal(block.getContent());
+			
+			byte[] wrappedKey = rsa.wrap(aesKey);
+			
+			return new EncryptedFileBlock(Application.getPropertiesManager().getPeerId(), encryptedContent, block.getIndex(), wrappedKey);
+		} catch (Exception e) {
+			throw new KeyException();
+		}
 	}
 }

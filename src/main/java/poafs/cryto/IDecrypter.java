@@ -7,6 +7,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import poafs.exception.KeyException;
 import poafs.file.EncryptedFileBlock;
 import poafs.file.FileBlock;
 
@@ -16,6 +17,7 @@ public interface IDecrypter {
 	 * @param input The encrypted input data.
 	 * 
 	 * @return The decrypted output data.
+	 * @throws KeyException 
 	 */
-	FileBlock decrypt(EncryptedFileBlock block) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException;
+	FileBlock decrypt(EncryptedFileBlock block) throws KeyException;
 }

@@ -12,6 +12,8 @@ import java.util.Scanner;
 import javax.crypto.NoSuchPaddingException;
 
 import poafs.adapter.WebServer;
+import poafs.exception.KeyException;
+import poafs.exception.ProtocolException;
 import poafs.file.FileMeta;
 import poafs.local.PropertiesManager;
 
@@ -33,14 +35,19 @@ public class Application {
 	 */
 	private static PropertiesManager pm = new PropertiesManager();
 	
-	public static void main(String[] args) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException {
-		pm.loadProperties();
-		
-		net = new Network(args[0], Integer.parseInt(args[1]));
-		
-		new Thread(new WebServer(8080, net)).start();
-		
-		ui();
+	public static void main(String[] args) throws IOException, ProtocolException, KeyException {
+		try {
+			pm.loadProperties();
+			
+			net = new Network(args[0], Integer.parseInt(args[1]), Boolean.parseBoolean(args[2]));
+			
+			new Thread(new WebServer(8080, net)).start();
+			
+			ui();
+		} catch (ProtocolException e) {
+			System.err.println(e.getMessage());
+			e.printStackTrace();
+		}
 	}
 	
 	private static void ui() {
@@ -51,7 +58,12 @@ public class Application {
 		System.out.println("Password: ");
 		String pass = sc.nextLine();
 		
-		boolean authorised = net.login(user, pass);
+		boolean authorised = false;
+		try {
+			authorised = net.login(user, pass);
+		} catch (ProtocolException | KeyException e) {
+			System.err.println(e.getMessage());
+		}
 		
 		if (authorised) {
 			System.out.println("Logged in.");
@@ -62,7 +74,11 @@ public class Application {
 				String command = sc.nextLine();
 				switch (command) {
 					case "ls":
-						listFiles(net.listFiles());
+						try {
+							listFiles(net.listFiles());
+						} catch (ProtocolException e) {
+							System.err.println(e.getMessage());
+						}
 						break;
 					case "load":
 						printFile(net.fetchFile(sc.nextLine()));
